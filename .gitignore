@@ -1,1 +1,9 @@
+#Python stuff
 __pycache__/
+
+#Database stuff
+db.sqlite3
+forum/migrations/
+
+#PyCharm stuff
+.idea/
