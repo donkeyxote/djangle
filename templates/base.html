@@ -7,9 +7,18 @@
 </head>
 <body>
     <header>
-        <h1>Djangle</h1>
-        <h2>{% block subtitle %}{% endblock %}</h2>
+            <div style="float:left; width: 50%;">
+                <h1>Djangle</h1>
+                <h2>{% block subtitle %}{% endblock %}</h2>
+            </div>
+            <div style="float:right; width: 50%;"  align="right">
+                {% if request.user %}{{ request.user.username }}{% endif %}
+            </div>
     </header>
-    {% block body %}{% endblock %}
+
+    <div style="float:left; width: 100%;">
+        {% block body %}{% endblock %}
+    </div>
+
 </body>
 </html>

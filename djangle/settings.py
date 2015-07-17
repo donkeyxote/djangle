@@ -103,3 +103,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'forum.User'
+
+LOGIN_URL = '/login'
