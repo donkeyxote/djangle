@@ -12,16 +12,16 @@ class Board(models.Model):
 
 
 class User(AbstractUser):
-    rep = models.IntegerField()
+    rep = models.IntegerField(default=0)
     avatar = models.ImageField()
-    posts = models.PositiveIntegerField()
-    threads = models.PositiveIntegerField()
+    posts = models.PositiveIntegerField(default=0)
+    threads = models.PositiveIntegerField(default=0)
 
 
 class Post(models.Model):
     message = models.CharField(max_length=5000)
     pub_date = models.DateTimeField('publication date')
-    thread = models.ForeignKey(Thread)
+    in_thread = models.ForeignKey('Thread')
     author = models.ForeignKey(User)
     pos_votes = models.PositiveIntegerField()
     neg_votes = models.PositiveIntegerField()
@@ -32,7 +32,7 @@ class Post(models.Model):
 
 class Thread(models.Model):
     title = models.CharField(max_length=200)
-    post = models.ForeignKey(Post)
+    first_post = models.ForeignKey(Post, related_name='thread_message')
     open = models.BooleanField
     close_date = models.DateTimeField('closed on')
     closer = models.ForeignKey(User)
@@ -65,5 +65,5 @@ class Ban(models.Model):
     user = models.ForeignKey(User)
     start = models.DateTimeField('start on')
     duration = models.DurationField('duration')
-    banner = models.ForeignKey(User)
+    banner = models.ForeignKey(User, related_name='banner')
     reason = models.CharField(max_length=50)
