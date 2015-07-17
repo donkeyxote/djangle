@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-Type" content="text/html;charset=utf-8" />
+    <title>Djangle {% block titlesection %}{% endblock %}</title>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <h1>Djangle</h1>
+        <h2>{% block subtitle %}{% endblock %}</h2>
+    </header>
+    {% block body %}{% endblock %}
+</body>
+</html>
