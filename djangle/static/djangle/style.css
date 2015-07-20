@@ -1,0 +1,158 @@
+/* =GENERAL---------------------*/
+body{
+	font-family: Helvetica;
+	margin:0px;
+	padding:0px;
+	background:#fff;
+	overflow-x: auto;
+}
+
+a:link{
+	color:#ff9900;
+	font-weight: bold;
+	text-decoration:none;
+}
+
+a:hover{
+	font-weight: bold;
+	text-decoration:underline;
+}
+
+a:visited{
+	color:#ff6600;
+	font-weight: bold;
+	text-decoration:none;
+}
+
+/*=HEADER--------------------------*/
+header {
+	height:3em;
+	background:#333;
+	color:#c1c1c1;
+	display:block;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-top:10px;
+	padding-bottom: 10px;
+	text-shadow: 0px 0px 3px #000;
+}
+
+#top{
+	min-width: 300px;
+	max-width: 1024px;
+	margin:auto;
+    align-self:center;
+}
+
+#header-left{
+	display: inline;
+	float:left;
+	text-align: left;
+	margin-top: 0px;
+	margin-bottom: 0px;
+    -webkit-margin-before: 0;
+    -webkit-margin-after: 0;
+
+}
+
+#header-title{
+	display: inline;
+	float:left;
+	text-align: left;
+	margin-top: 0px;
+	margin-bottom: 0px;
+    padding-right: 5px;
+    -webkit-margin-before: 0;
+    -webkit-margin-after: 0;
+}
+
+#logo{
+    width: 45px;
+    height: 45px;
+    vertical-align: 50%;
+}
+
+#logo-title{
+    height: 40px;
+    vertical-align: 50%
+}
+
+#header-subtitle{
+	display: inline;
+	float:left;
+	text-align: left;
+    margin-top: 14px;
+	margin-bottom: 0px;
+    padding-left: 10px;
+    -webkit-margin-before: 0;
+    -webkit-margin-after: 0;
+}
+
+
+#header-right {
+	display: inline;
+	width:30%;
+	float:right;
+	text-align:right;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+/*=MENU-------------------------------*/
+ul.menu {
+	list-style-type: none;
+	margin: auto;
+	padding: 0;
+	width:100%;
+	background:#ff9900;
+	box-shadow: 0px 2px 5px #555;
+	position:absolute;
+}
+
+li.menu {
+	float: left;
+	width: 25%;
+}
+
+a:link.menu, a:visited.menu {
+	display: block;
+	font-weight: bold;
+	text-align: center;
+	padding-left: 10px;
+	padding-right: 10px;
+	text-decoration: none;
+	color:#fff;
+	padding-top:6px;
+	padding-bottom:6px;
+	text-shadow: 0px 0px 2px #000;
+}
+
+a:hover.menu, a:active.menu {
+	color:#ff9900;
+	background: #fff;
+	margin-left: 20%;
+	margin-right: 20%;
+	padding-top:6px;
+	padding-bottom:6px;
+	text-shadow: 0px 0px 0px;
+}
+
+#auth:visited, #auth:link {
+    color: #ff9900;
+}
+
+/*=LAYOUT--------------------------------*/
+.container{
+	min-width:300px;
+	max-width: 1024px;
+	align:center;
+	margin:auto;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 30px;
+	background: #fff;
+}
+
+h1.container{
+    padding-top:60px;
+}

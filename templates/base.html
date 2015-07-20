@@ -1,22 +1,43 @@
 <!DOCTYPE html>
+{% load staticfiles %}
+
 <html>
 <head>
     <meta http-equiv="content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="{% static 'djangle/style.css' %}" />
+    <link rel="shortcut icon" type="image/png" href="{% static 'djangle/images/favicon.ico' %}"/>
     <title>Djangle {% block titlesection %}{% endblock %}</title>
     {% block head %}{% endblock %}
 </head>
 <body>
     <header>
-            <div style="float:left; width: 50%;">
-                <h1>Djangle</h1>
-                <h2>{% block subtitle %}{% endblock %}</h2>
+        <div id="top">
+            <div id="header-left">
+                <h1 id="header-title">
+                    <a href="/">
+                        <img src="{% static 'djangle/images/Djangle_logo.png'%}" alt="Djangle logo" id="logo">
+                        <img src="{% static 'djangle/images/Djangle_text.png' %}" alt="Djangle" id="logo-title">
+                    </a>
+                </h1>
+                <h2 id="header-subtitle">{% block subtitle %}{% endblock %}</h2>
             </div>
-            <div style="float:right; width: 50%;"  align="right">
-                {% if request.user %}{{ request.user.username }}{% endif %}
+            <div id="header-right">
+                {% if request.user.is_authenticated %}
+                    <a href=# id="auth">{{ request.user.username }}</a> | <a href="/logout" id="auth">Logout</a>
+                {% else %}
+                    <a href="/login" id="auth">Login</a>
+                {% endif %}
             </div>
+        </div>
     </header>
 
-    <div style="float:left; width: 100%;">
+    <ul class="menu">
+        <div id="top">
+            {% block menu %}{% endblock %}
+        </div>
+    </ul>
+
+    <div class="content">
         {% block body %}{% endblock %}
     </div>
 
