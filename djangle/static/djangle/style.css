@@ -66,6 +66,10 @@ header {
     -webkit-margin-after: 0;
 }
 
+#alogo:hover{
+	text-decoration: none;
+}
+
 #logo{
     width: 45px;
     height: 45px;
