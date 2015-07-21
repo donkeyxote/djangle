@@ -103,14 +103,21 @@ header {
 }
 
 /*=MENU-------------------------------*/
+div.menu {
+	margin: auto;
+	padding: 0;
+	width: 100%;
+	background: #ff9900;
+	box-shadow: 0px 2px 5px #555;
+	position: absolute;
+}
+
 ul.menu {
 	list-style-type: none;
 	margin: auto;
 	padding: 0;
 	width:100%;
 	background:#ff9900;
-	box-shadow: 0px 2px 5px #555;
-	position:absolute;
 }
 
 li.menu {

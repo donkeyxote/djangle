@@ -20,5 +20,8 @@ from . import views
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.mainpage, name='main_page'),
+    url(r'^forum/', include('forum.urls', namespace='forum')),
+    url(r'^logout/', views.logout_view, name='logout'),
+    url(r'^profile/', views.mainpage, name='profile'),
     url(r'', include('django.contrib.auth.urls')),
 ]

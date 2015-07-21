@@ -4,7 +4,7 @@
 {% block body %}
     <section>
         {% if form.errors %}
-            <p>Your username and password didn't match, please try again.</p>
+            <p id="login-error">Your username and password didn't match, please try again.</p>
         {% endif %}
         <form method="post">
             {% csrf_token %}
@@ -18,7 +18,7 @@
             {% if next %}
                 <input type="hidden" name="next" value="{{ next }}" />
             {% else %}
-                <input type="hidden" name="next" value="/" />
+                <input type="hidden" name="next" value={% url 'main_page' %} />
             {% endif %}
             <input type="submit" value="login" />
         </form>

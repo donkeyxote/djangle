@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block menu %}
-    <li class="menu"><a href='/forum' class="menu">Forum</a></li>
+    <li class="menu"><a href='{% url 'forum:index' %}' class="menu">Forum</a></li>
 {% endblock %}
 
 {% block body %}

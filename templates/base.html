@@ -14,7 +14,7 @@
         <div id="top">
             <div id="header-left">
                 <h1 id="header-title">
-                    <a href="/" id="alogo">
+                    <a href='{% url 'main_page' %}' id="alogo">
                         <img src="{% static 'djangle/images/Djangle_logo.png'%}" alt="Djangle logo" id="logo">
                         <img src="{% static 'djangle/images/Djangle_text.png' %}" alt="Djangle" id="logo-title">
                     </a>
@@ -23,20 +23,23 @@
             </div>
             <div id="header-right">
                 {% if request.user.is_authenticated %}
-                    <a href=# id="auth">{{ request.user.username }}</a> | <a href="/logout" id="auth">Logout</a>
+                    <a href='{% url 'profile' %}' id="auth">{{ request.user.username }}</a> | <a href='{% url 'logout' %}' id="auth">Logout</a>
                 {% else %}
-                    <a href="/login" id="auth">Login</a>
+                    <a href='{% url 'login' %}' id="auth">Login</a>
                 {% endif %}
             </div>
         </div>
     </header>
 
-    <ul class="menu">
+    <div class="menu">
         <div id="top">
-            {% block menu %}{% endblock %}
+            <ul class="menu">
+                <!--<div id="top">-->
+                    {% block menu %}{% endblock %}
+                <!--</div>-->
+            </ul>
         </div>
-    </ul>
-
+    </div>
     <div class="content">
         {% block body %}{% endblock %}
     </div>
