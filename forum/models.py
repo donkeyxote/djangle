@@ -12,8 +12,9 @@ class Board(models.Model):
 
 
 class User(AbstractUser):
+    models.EmailField.unique = True
     rep = models.IntegerField(default=0)
-    avatar = models.ImageField()
+    avatar = models.ImageField(default='static/djangle/images/Djangle_logo.png')
     posts = models.PositiveIntegerField(default=0)
     threads = models.PositiveIntegerField(default=0)
 
