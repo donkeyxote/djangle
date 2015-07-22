@@ -1,3 +1,4 @@
+from operator import attrgetter
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -8,8 +9,16 @@ class Board(models.Model):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=10)
 
-    def get_latest(self, num):
-        return self.thread_set.order_by('-last_post()')[:num]
+    def get_latest(self, num=5):
+        latest_posts = []
+        for thread in self.thread_set.all():
+            if thread.last_post() is not None:
+                latest_posts.append(thread.last_post())
+        latest_posts = sorted(latest_posts, key=attrgetter('pub_date'), reverse=True)
+        latest_threads = []
+        for post in latest_posts[:num]:
+            latest_threads.append(post.in_thread)
+        return latest_threads
 
     def __str__(self):
         return self.code

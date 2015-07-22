@@ -1,6 +1,6 @@
 from django.conf.urls import url
-from djangle import views as djangleviews
+from . import views
 
 urlpatterns = [
-    url(r'^$', djangleviews.mainpage, name='index'),
+    url(r'^$', views.index, name='index'),
 ]

@@ -1,0 +1,42 @@
+{%  extends 'base.html' %}
+{% load staticfiles %}
+{%  block titlesection %}- Forum{%  endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
+{% endblock %}
+{% block subtitle %}Forum Index{%  endblock %}
+{% block body %}
+    {%  if boards %}
+        <ul class='boards'>
+            {% for board in boards %}
+                <li class="boards"><div class="boards">{{ board.name }}</div>
+                    {% if board.thread_set.all %}
+                        <table class="thread">
+                            <tr class="thread" id="title">
+                                <td id="thread">Thread</td>
+                                <td id="posts">Posts</td>
+                                <td colspan="2" id="votes">Votes</td>
+                                <td id="last">Last Post</td>
+                            </tr>
+                            {% for thread in board.get_latest %}
+                                {% if thread.last_post %}
+                                    <tr class="thread" id="t-stats">
+                                        <td id="thread">{{ thread }}
+                                        by {{ thread.first_post.author }}</td>
+                                        <td id="posts">{{ thread.post_set.all.count }}</td>
+                                        <td id="votes-p">+{{ thread.first_post.pos_votes }}</td>
+                                        <td id="votes-n">-{{ thread.first_post.neg_votes }}</td>
+                                        <td id="last">{{ thread.last_post.pub_date }}<br/>{{ thread.last_post.author }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </table>
+                    {% else %}
+                        <p id="no-threads">No threads available.</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+
+        </ul>
+    {% endif %}
+{% endblock %}
