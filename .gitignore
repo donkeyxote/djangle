@@ -3,6 +3,7 @@ __pycache__/
 
 #Database stuff
 db.sqlite3
+init_db.py
 forum/migrations/
 
 #PyCharm stuff
