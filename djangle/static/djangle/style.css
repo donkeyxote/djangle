@@ -142,7 +142,7 @@ a:hover.menu, a:active.menu {
 
 /*=LAYOUT--------------------------------*/
 .container{
-	min-width:300px;
+	min-width:100px;
 	max-width: 1024px;
 	margin:auto;
 	padding: 30px 20px auto;
