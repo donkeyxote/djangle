@@ -7,26 +7,30 @@
 {% block subtitle %}Forum Index{%  endblock %}
 {% block body %}
     {%  if boards %}
-        <ul class='boards'>
-            {% for board in boards %}
-                <li class="boards"><div class="boards">{{ board.name }}</div>
+        {% for board in boards %}
+            <a href="#" id="board"><div class="well well-sm boards lead">{{ board.name }}</div></a>
+            <div class="row">
+                <div class="col-md-1 hidden-xs"></div>
+                <div class="col-md-11 col-xs-12">
                     {% if board.thread_set.all %}
-                        <table class="thread">
-                            <tr class="thread" id="title">
-                                <td id="thread">Thread</td>
-                                <td id="posts">Posts</td>
-                                <td colspan="2" id="votes">Votes</td>
-                                <td id="last">Last Post</td>
-                            </tr>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th id="thread">Thread</th>
+                                    <th id="replies">Replies</th>
+                                    <th id="votes">Votes</th>
+                                    <th id="last">Last Post</th>
+                                </tr>
+                            </thead>
                             {% for thread in board.get_latest %}
                                 {% if thread.last_post %}
-                                    <tr class="thread" id="t-stats">
-                                        <td id="thread">{{ thread }}
-                                        by {{ thread.first_post.author }}</td>
-                                        <td id="posts">{{ thread.post_set.all.count }}</td>
-                                        <td id="votes-p">+{{ thread.first_post.pos_votes }}</td>
-                                        <td id="votes-n">-{{ thread.first_post.neg_votes }}</td>
-                                        <td id="last">{{ thread.last_post.pub_date }}<br/>{{ thread.last_post.author }}</td>
+                                    <tr>
+                                        <td id="thread"><a href="#">{{ thread }}</a>
+                                            by <a href=#>{{ thread.first_post.author }}</a></td>
+                                        <td id="replies"><script> document.write({{ thread.post_set.all.count }} - 1)</script></td>
+                                        <td id="votes"><p id="pos_votes">&#9650; {{ thread.first_post.pos_votes }}</p><p id="neg_votes">&#9660; {{ thread.first_post.neg_votes }}</p></td>
+                                        <td id="last"><a href="#">{{ thread.last_post.pub_date|date:'Y-m-d H:i' }}</a><br/>
+                                            <a href=#>{{ thread.last_post.author }}</a></td>
                                     </tr>
                                 {% endif %}
                             {% endfor %}
@@ -34,9 +38,8 @@
                     {% else %}
                         <p id="no-threads">No threads available.</p>
                     {% endif %}
-                </li>
-            {% endfor %}
-
-        </ul>
+                </div>
+            </div>
+        {% endfor %}
     {% endif %}
 {% endblock %}

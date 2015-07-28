@@ -2,6 +2,6 @@
 
 {% block menu %}
     {% if user.is_authenticated %}
-        <li class="menu"><a href='{% url 'forum:index' %}' class="menu">New Thread</a></li>
+        <li><a href='{% url 'forum:index' %}'>New Thread</a></li>
     {% endif %}
 {% endblock %}

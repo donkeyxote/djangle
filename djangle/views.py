@@ -3,7 +3,6 @@ from django.contrib.auth.views import login
 from djangle.forms import UserCreationForm, LoginForm
 from django.shortcuts import render_to_response, redirect, render
 
-
 def mainpage(request):
     return render_to_response('index.html', {'request': request})
 
