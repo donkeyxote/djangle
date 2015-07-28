@@ -1,73 +1,33 @@
 .boards{
-    margin: 50px 0 0 0;
-    padding: 0;
-    width: 100%;
+    background-color: #ffe89c;
 }
 
-li.boards{
-    list-style-type: none;
-    width: 100%;
-    padding: 0;
-    margin: 0 0 5px;
+#board{
+    color:#000;
 }
 
-div.boards{
-    background: #ffe89c;
-    width: 100%;
-    padding: 5px;
-    box-sizing: border-box;
+
+#board:hover, .boards:hover{
+    text-decoration: none;
+    background-color: #ffd75a;
 }
 
-table.thread{
-    width: 98%;
-    margin-top: 5px;
-    margin-left: 2%;
-    border: 0 hidden;
-    border-collapse: collapse;
+.well{
+    border:0;
 }
 
-#title{
-    text-align: center;
-    font-weight: bold;
-    width: 50%;
-}
-
-#posts{
+#replies, #votes{
     width: 10%;
 }
 
-#votes{
-    width: 10%;
+#pos_votes{
+    color: #008000;
 }
 
-#votes-p{
-    width: 5%;
-}
-
-#votes-n{
-    width: 5%;
+#neg_votes{
+    color: #CC0000;
 }
 
 #last{
     width: 20%;
-}
-
-#t-stats{
-    text-align: center;
-}
-
-#thread {
-    text-align: left
-}
-
-td {
-    padding: 5px;
-    border-top: 1px solid #e1e1e1;
- }
-
-#no-threads{
-    width: 98%;
-    margin-top: 10px;
-    margin-left: 2%;
-
 }

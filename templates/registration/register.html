@@ -1,17 +1,20 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 {% block titlesection %}- Registration{% endblock %}
 {% block subtitle %}Registration Page{% endblock %}
 {% block body %}
     <section>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+        <table id="registration">
+            {{ form|crispy }}
+        </table>
             {% if next %}
                 <input type="hidden" name="next" value="{{ next }}" />
             {% else %}
                 <input type="hidden" name="next" value={% url 'main_page' %} />
             {% endif %}
-            <input type="submit" value="Create" />
+            <input type="submit" value="Create" class="btn btn-default" />
         </form>
     </section>
 {% endblock %}

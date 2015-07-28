@@ -4,6 +4,7 @@
 <html>
 <head>
     <meta http-equiv="content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="{% static 'djangle/style.css' %}" />
     <link rel="shortcut icon" type="image/png" href="{% static 'djangle/images/favicon.ico' %}"/>
     <title>Djangle {% block titlesection %}{% endblock %}</title>
@@ -11,45 +12,50 @@
 </head>
 <body>
     <header>
-        <div id="top">
-            <div id="header-left">
-                <h1 id="header-title">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-8 text-left-not-xs">
                     <a href='{% url 'main_page' %}' id="alogo">
                         <img src="{% static 'djangle/images/Djangle_logo.png'%}" alt="Djangle logo" id="logo">
                         <img src="{% static 'djangle/images/Djangle_text.png' %}" alt="Djangle" id="logo-title">
                     </a>
-                </h1>
-                <h2 id="header-subtitle">{% block subtitle %}{% endblock %}</h2>
-            </div>
-            <div id="header-right">
-                {% if request.user.is_authenticated %}
-                    <!--Temporary Admin link -->
-                    {% if request.user.is_superuser %}
-                        <a href='/admin' id="auth">{{ request.user.username }}</a> | <a href='{% url 'logout' %}' id="auth">Logout</a>
+                </div>
+                <div class="col-sm-4 text-right-not-xs" id="header-right">
+                    {% if request.user.is_authenticated %}
+                        <!--Temporary Admin link -->
+                        {% if request.user.is_superuser %}
+                            <a href='/admin' id="auth">{{ request.user.username }}</a> | <a href='{% url 'logout' %}' id="auth">Logout</a>
+                        {% else %}
+                        <!--  Not temporary section -->
+                            <a href='{% url 'profile' %}' id="auth">{{ request.user.username }}</a> | <a href='{% url 'logout' %}' id="auth">Logout</a>
+                        <!-- Temporary closure -->
+                        {% endif %}
+                        <!-- End of temporary section-->
                     {% else %}
-                    <!--  Not temporary section -->
-                        <a href='{% url 'profile' %}' id="auth">{{ request.user.username }}</a> | <a href='{% url 'logout' %}' id="auth">Logout</a>
-                    <!-- Temporary closure -->
+                        <a href='{% url 'register' %}' id="auth">Sign Up</a> | <a href='{% url 'login' %}' id="auth">Login</a>
                     {% endif %}
-                    <!-- End of temporary section-->
-                {% else %}
-                    <a href='{% url 'register' %}' id="auth">Sign Up</a> | <a href='{% url 'login' %}' id="auth">Login</a>
-                {% endif %}
+                </div>
             </div>
         </div>
     </header>
 
-    <div class="menu">
-        <div id="top">
-            <ul class="menu">
+    <nav class="navbar navbar-forum">
+        <div class="container">
+            <div>
+                 <div class="navbar-header">
+                     <a class="navbar-brand-forum">{% block subtitle %}{% endblock %}</a>
+                 </div>
+                <ul class="nav navbar-nav navbar-right">
                     {% block menu %}{% endblock %}
-            </ul>
+                </ul>
+            </div>
         </div>
-    </div>
+    </nav>
 
     <div class="container">
         {% block body %}{% endblock %}
     </div>
 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 </body>
 </html>

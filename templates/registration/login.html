@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 {% block titlesection %}- Login{% endblock %}
 {% block subtitle %}Login Page{% endblock %}
 {% block body %}
@@ -8,19 +9,17 @@
         {% endif %}
         <form method="post">
             {% csrf_token %}
-            <p>
-                <label for="id_username">Username:</label>
-                {{ form.username }}
-            </p> <p>
-                <label for="id_password">Password:</label>
-                {{ form.password }}
-            </p>
+        <table id="registration">
+            {{ form|crispy }}
+        </table>
             {% if next %}
                 <input type="hidden" name="next" value="{{ next }}" />
             {% else %}
                 <input type="hidden" name="next" value={% url 'main_page' %} />
             {% endif %}
-            <input type="submit" value="Login" />
+
+            <input type="submit" value="Login" class="btn btn-default" />
+
         </form>
     </section>
 {% endblock %}
