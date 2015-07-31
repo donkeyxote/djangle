@@ -6,26 +6,41 @@
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
 {% block body %}
-    {% for post in posts %}
-        {% if post == thread.first_post %}
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    {{ thread.title }}
+        {% for post in posts %}
+            <div class="row">
+                <div class="col-sm-2">
+                    <div class="row">
+                    <div class="col-xs-6 col-sm-12">
+                        <img src="{{ post.author.avatar }}" class="img-thumbnail" width="70"><br/>
+                    </div>
+                    <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
+                        <span class="glyphicon glyphicon-user"></span> {{ post.author }}<br/>
+                        <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ post.author.rep }}</a><br/>
+                        <a title="Posts"><span class="glyphicon glyphicon-pencil"></span> {{ post.author.posts }}</a>
+
+                    </div>
+                    </div>
                 </div>
-        {% else %}
-            <div class="panel panel-default">
-        {% endif %}
-                <div class="panel-body">
-                 <div class="row">
-                     <div class="col-sm-9">
-                         {{ post.message|linebreaksbr }}
-                     </div>
-                     <div class="col-sm-3 post_detail">
-                         {{ post.author }}<br/>
-                         {{ post.pub_date|date:'Y-m-d H:i' }}<br/>
-                         <span id="pos_votes">&#9650;{{ post.pos_votes }}</span><span id="neg_votes">&#9660;{{ post.neg_votes }}</span>
-                     </div>
-                 </div>
+                <div class="col-sm-10">
+                    <div class="panel panel-default">
+                        {% if post == thread.first_post %}
+                            <div class="panel-heading">
+                                <span class="lead">{{ thread.title }}</span>
+                            </div>
+                        {% endif %}
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <span class="small text-muted">{{ post.pub_date|date:'Y-m-d H:i' }}</span><br/>
+                                    <div>{{ post.message|linebreaksbr }}</div>
+                                </div>
+                                <div class="col-sm-3 text-right-not-xs text-left-xs">
+                                    <span class="badge" id="pos_badge">{{ post.pos_votes }}</span>
+                                    <span class="badge" id="neg_badge">{{ post.neg_votes }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
     {% endfor %}
