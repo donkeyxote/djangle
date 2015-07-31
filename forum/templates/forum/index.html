@@ -4,7 +4,6 @@
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
-{% block subtitle %}Forum Index{%  endblock %}
 {% block body %}
     {%  if boards %}
         {% for board in boards %}
@@ -25,7 +24,7 @@
                             {% for thread in board.get_latest %}
                                 {% if thread.last_post %}
                                     <tr>
-                                        <td id="thread"><a href="#">{{ thread }}</a>
+                                        <td id="thread"><a href="{% url 'forum:thread' thread.pk 1 %}">{{ thread }}</a>
                                             by <a href=#>{{ thread.first_post.author }}</a></td>
                                         <td id="replies"><script> document.write({{ thread.post_set.all.count }} - 1)</script></td>
                                         <td id="votes"><p id="pos_votes">&#9650; {{ thread.first_post.pos_votes }}</p><p id="neg_votes">&#9660; {{ thread.first_post.neg_votes }}</p></td>
