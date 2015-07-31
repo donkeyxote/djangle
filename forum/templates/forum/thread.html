@@ -1,0 +1,45 @@
+{%  extends 'forum/base.html' %}
+{% load staticfiles %}
+{%  block titlesection %}- {{ thread }}{%  endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
+{% endblock %}
+{% block body %}
+    {% for post in posts %}
+        {% if post == thread.first_post %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    {{ thread.title }}
+                </div>
+        {% else %}
+            <div class="panel panel-default">
+        {% endif %}
+                <div class="panel-body">
+                 <div class="row">
+                     <div class="col-sm-9">
+                         {{ post.message }}
+                     </div>
+                     <div class="col-sm-3 post_detail">
+                         {{ post.author }}<br/>
+                         {{ post.pub_date|date:'Y-m-d H:i' }}<br/>
+                         <span id="pos_votes">&#9650;{{ post.pos_votes }}</span><span id="neg_votes">&#9660;{{ post.neg_votes }}</span>
+                     </div>
+                 </div>
+                </div>
+            </div>
+        {% endfor %}
+
+    {% if posts.has_other_pages %}
+        <div class="row text-center">
+            <ul class="pagination">
+            {% for p in posts.paginator.page_range %}
+                {% if p == posts.number %}
+                    <li class="active"><a href="{% url 'forum:thread' thread.pk p %}">{{ p }}</a> </li>
+                {% else %}
+                    <li><a href="{% url 'forum:thread' thread.pk p %}">{{ p }}</a></li>
+                {% endif %}
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}
