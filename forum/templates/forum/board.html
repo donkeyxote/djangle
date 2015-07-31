@@ -4,7 +4,6 @@
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
-{% block subtitle %}{{ board.name }}{% endblock %}
 {% block body %}
     <a href="{%  url 'forum:board' board.code none %}" id="board"><div class="well well-sm boards lead">{{ board.name }}</div></a>
     <div class="row">
