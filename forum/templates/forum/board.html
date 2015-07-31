@@ -1,0 +1,54 @@
+{%  extends 'forum/base.html' %}
+{% load staticfiles %}
+{%  block titlesection %}- Forum - {{ board.name }}{%  endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
+{% endblock %}
+{% block subtitle %}{{ board.name }}{% endblock %}
+{% block body %}
+    <a href="{%  url 'forum:board' board.code none %}" id="board"><div class="well well-sm boards lead">{{ board.name }}</div></a>
+    <div class="row">
+        <div class="col-md-1 hidden-xs"></div>
+        <div class="col-md-11 col-xs-12">
+            {% if board.thread_set.all %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th id="thread">Thread</th>
+                            <th id="replies">Replies</th>
+                            <th id="votes">Votes</th>
+                            <th id="last">Last Post</th>
+                        </tr>
+                    </thead>
+                    {% for thread in thread_set %}
+                        {% if thread.last_post %}
+                            <tr>
+                                <td id="thread"><a href="#">{{ thread }}</a>
+                                    by <a href=#>{{ thread.first_post.author }}</a></td>
+                                <td id="replies"><script> document.write({{ thread.post_set.all.count }} - 1)</script></td>
+                                <td id="votes"><p id="pos_votes">&#9650; {{ thread.first_post.pos_votes }}</p><p id="neg_votes">&#9660; {{ thread.first_post.neg_votes }}</p></td>
+                                <td id="last"><a href="#">{{ thread.last_post.pub_date|date:'Y-m-d H:i' }}</a><br/>
+                                    <a href=#>{{ thread.last_post.author }}</a></td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p id="no-threads">No threads available.</p>
+            {% endif %}
+        </div>
+    </div>
+{% if thread_set.has_other_pages %}
+    <div class="row text-center">
+        <ul class="pagination">
+            {% for page in thread_set.paginator.page_range %}
+                {% if page == thread_set.number %}
+                    <li class="active"><a href="{%  url "forum:board" board.code page %}">{{ page }}</a></li>
+                {% else %}
+                    <li><a href="{% url "forum:board" board.code page %}">{{ page }}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+{% endblock %}

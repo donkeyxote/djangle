@@ -8,7 +8,7 @@
 {% block body %}
     {%  if boards %}
         {% for board in boards %}
-            <a href="#" id="board"><div class="well well-sm boards lead">{{ board.name }}</div></a>
+            <a href="{%  url 'forum:board' board.code none %}" id="board"><div class="well well-sm boards lead">{{ board.name }}</div></a>
             <div class="row">
                 <div class="col-md-1 hidden-xs"></div>
                 <div class="col-md-11 col-xs-12">
@@ -22,7 +22,7 @@
                                     <th id="last">Last Post</th>
                                 </tr>
                             </thead>
-                            {% for thread in board.get_latest %}
+                            {% for thread in board.get_new %}
                                 {% if thread.last_post %}
                                     <tr>
                                         <td id="thread"><a href="#">{{ thread }}</a>

@@ -9,7 +9,7 @@ class Board(models.Model):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=10)
 
-    def get_latest(self, num=5):
+    def get_latest(self, num=None):
         latest_posts = []
         for thread in self.thread_set.all():
             if thread.last_post() is not None:
@@ -19,6 +19,9 @@ class Board(models.Model):
         for post in latest_posts[:num]:
             latest_threads.append(post.in_thread)
         return latest_threads
+
+    def get_new(self, num=5):
+        return self.get_latest(num)
 
     def __str__(self):
         return self.code
