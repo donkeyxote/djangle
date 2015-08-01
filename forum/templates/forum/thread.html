@@ -34,8 +34,16 @@
                                     <div>{{ post.message }}</div>
                                 </div>
                                 <div class="col-sm-3 text-right-not-xs text-left-xs">
-                                    <span class="badge" id="pos_badge">{{ post.pos_votes }}</span>
-                                    <span class="badge" id="neg_badge">{{ post.neg_votes }}</span>
+                                    <a href="{% url 'forum:pos_vote' post.pk 'up' %}?next={{ request.get_full_path|urlencode }}">
+                                        <span class="badge" id="pos_badge">
+                                            {{ post.pos_votes }}
+                                        </span>
+                                    </a>
+                                    <a href="{% url 'forum:neg_vote' post.pk 'down' %}?next={{ request.get_full_path|urlencode }}">
+                                        <span class="badge" id="neg_badge">
+                                            {{ post.neg_votes }}
+                                        </span>
+                                    </a>
                                 </div>
                             </div>
                         </div>

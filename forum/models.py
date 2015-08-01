@@ -89,6 +89,63 @@ class Vote(models.Model):
     user = models.ForeignKey(User)
     value = models.BooleanField()
 
+    class Meta:
+        unique_together = (('post', 'user'),)
+
+    @classmethod
+    def vote(cls, post, user, value):
+        if user == post.author:
+            return
+        vote = Vote.objects.filter(post=post, user=user).first()
+        if vote == None:
+            vote = cls(post=post, user=user, value=value)
+            vote.save()
+            if value:
+                post.pos_votes += 1
+                post.author.rep += 1
+                post.save()
+                post.author.save()
+            else:
+                post.neg_votes += 1
+                post.author.rep -= 1
+                post.save()
+                post.author.save()
+            return vote
+        else:
+            if value:
+                if not vote.value:
+                    vote.value = value
+                    post.pos_votes += 1
+                    post.neg_votes -= 1
+                    post.author.rep += 2
+                    vote.save()
+                    post.save()
+                    post.author.save()
+                else:
+                    post.pos_votes -= 1
+                    post.author.rep -= 1
+                    vote.delete()
+                    post.save()
+                    post.author.save()
+                    return
+            else:
+                if vote.value:
+                    vote.value = value
+                    post.pos_votes -= 1
+                    post.neg_votes += 1
+                    post.author.rep -= 2
+                    vote.save()
+                    post.save()
+                    post.author.save()
+                else:
+                    post.neg_votes -= 1
+                    post.author.rep += 1
+                    vote.delete()
+                    post.save()
+                    post.author.save()
+                    return vote
+        return
+
 
 class Ban(models.Model):
     user = models.ForeignKey(User)

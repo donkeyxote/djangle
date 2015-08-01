@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Board, Thread
+from django.http import HttpResponseRedirect
+from .models import Board, Thread, Post, Vote
 
 # Create your views here.
 
@@ -36,3 +37,13 @@ def thread_view(request, thread_pk, page):
     except EmptyPage:
         post_list = paginator.page(paginator.num_pages)
     return render(request, 'forum/thread.html', {'thread': td, 'posts': post_list})
+
+
+def vote(request, post_pk, vote):
+    redirect_to = request.REQUEST.get('next', '')
+    post = get_object_or_404(Post, pk=post_pk)
+    if vote == 'up':
+        Vote.vote(post=post, user=request.user, value=True)
+    elif vote == 'down':
+        Vote.vote(post=post, user=request.user, value=False)
+    return HttpResponseRedirect(redirect_to)
