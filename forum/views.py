@@ -2,7 +2,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Board, Thread, Post
+from .models import Board, Thread, Post, Vote
 from .forms import PostForm, BoardForm
 
 # Create your views here.
@@ -37,7 +37,7 @@ def thread_view(request, thread_pk, page):
         if form.is_valid():
             Post.create(message=form.cleaned_data['message'], thread=thread, author=request.user)
             return HttpResponseRedirect(reverse('forum:thread',
-                                                kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages}))
+                                                kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages}),'#bottom')
     else:
         form = PostForm()
     try:
@@ -58,3 +58,13 @@ def create_board(request):
     else:
         form = BoardForm()
     return render(request, 'forum/create_board.html', {'form': form})
+
+
+def vote_view(request, post_pk, vote):
+    redirect_to = request.REQUEST.get('next', '')
+    post = get_object_or_404(Post, pk=post_pk)
+    if vote == 'up':
+        Vote.vote(post=post, user=request.user, value=True)
+    elif vote == 'down':
+        Vote.vote(post=post, user=request.user, value=False)
+    return HttpResponseRedirect(redirect_to)

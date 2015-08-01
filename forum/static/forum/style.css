@@ -46,6 +46,10 @@
     background-color: #CC0000;
 }
 
+#voted{
+    color:#00ee00;
+}
+
 #last{
     width: 20%;
 }
