@@ -1,9 +1,9 @@
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Board, Thread, Post
-from .forms import PostForm
+from .forms import PostForm, BoardForm
 
 # Create your views here.
 
@@ -35,8 +35,7 @@ def thread_view(request, thread_pk, page):
     if request.method == 'POST':
         form = PostForm(request.POST)
         if form.is_valid():
-            user = request.user
-            Post.create(message=form.cleaned_data['message'], thread=thread, author=user)
+            Post.create(message=form.cleaned_data['message'], thread=thread, author=request.user)
             return HttpResponseRedirect(reverse('forum:thread',
                                                 kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages}))
     else:
@@ -48,3 +47,14 @@ def thread_view(request, thread_pk, page):
     except EmptyPage:
         post_list = paginator.page(paginator.num_pages)
     return render(request, 'forum/thread.html', {'thread': thread, 'posts': post_list, 'form': form})
+
+
+def create_board(request):
+    if request.method == 'POST':
+        form = BoardForm(request.POST)
+        if form.is_valid():
+            Board.create(name=form.cleaned_data['name'], code=form.cleaned_data['code'])
+            return redirect('forum:index')
+    else:
+        form = BoardForm()
+    return render(request, 'forum/create_board.html', {'form': form})

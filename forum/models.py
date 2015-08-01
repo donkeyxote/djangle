@@ -1,13 +1,21 @@
 from operator import attrgetter
+from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 # Create your models here.
 
+alphanumeric = RegexValidator(r'^\w*$', 'Only alphanumeric characters are allowed.')
+
 
 class Board(models.Model):
-    name = models.CharField(max_length=50)
-    code = models.CharField(max_length=10)
+    name = models.CharField(max_length=50, unique=True)
+    code = models.CharField(max_length=10, unique=True, validators=[alphanumeric])
+
+    @classmethod
+    def create(cls, name, code):
+        board = cls(name=name, code=code)
+        board.save()
 
     def get_latest(self, num=None):
         latest_posts = []
@@ -54,6 +62,8 @@ class Post(models.Model):
         if post.in_thread.first_post is None:
             post.in_thread.first_post = post
         post.in_thread.save()
+        author.posts += 1
+        author.save()
         return post
 
 
