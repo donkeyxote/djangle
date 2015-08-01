@@ -1,4 +1,4 @@
-djangle - a django jungle forum 
+djangle - a django jungle forum
 
 dependencies and higly recommended packages:
 
@@ -7,4 +7,4 @@ dependencies and higly recommended packages:
 - pytz
 - pillow
 - dbms and support libraries for python
-- django crispy forms
+- django crispy forms (included in project source)

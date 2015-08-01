@@ -1,5 +1,6 @@
 {%  extends 'forum/base.html' %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
 {%  block titlesection %}- {{ thread }}{%  endblock %}
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
@@ -31,7 +32,7 @@
                             <div class="row">
                                 <div class="col-sm-9">
                                     <span class="small text-muted">{{ post.pub_date|date:'Y-m-d H:i' }}</span><br/>
-                                    <div>{{ post.message }}</div>
+                                    <div>{{ post.message|linebreaksbr }}</div>
                                 </div>
                                 <div class="col-sm-3 text-right-not-xs text-left-xs">
                                     <a href="{% url 'forum:pos_vote' post.pk 'up' %}?next={{ request.get_full_path|urlencode }}">
@@ -50,7 +51,19 @@
                     </div>
                 </div>
             </div>
-        {% endfor %}
+    {% endfor %}
+
+    {% if posts.number == posts.paginator.num_pages %}
+        <section>
+            <form method="post">
+                {% csrf_token %}
+            <table id="message">
+                {{ form|crispy }}
+            </table>
+                <input type="submit" value="Post" class="btn btn-default" />
+            </form>
+        </section>
+    {% endif %}
 
     {% if posts.has_other_pages %}
         <div class="row text-center">

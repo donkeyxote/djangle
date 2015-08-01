@@ -1,11 +1,13 @@
+from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseRedirect
 from .models import Board, Thread, Post, Vote
+from .forms import PostForm
 
 # Create your views here.
 
-ELEM_PER_PAGE = 2
+ELEM_PER_PAGE = 20
 
 
 def index(request):
@@ -27,16 +29,25 @@ def board_view(request, board_code, page):
 
 
 def thread_view(request, thread_pk, page):
-    td = get_object_or_404(Thread, pk=thread_pk)
-    posts = td.post_set.order_by('pub_date')
+    thread = get_object_or_404(Thread, pk=thread_pk)
+    posts = thread.post_set.order_by('pub_date')
     paginator = Paginator(posts, ELEM_PER_PAGE)
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            user = request.user
+            Post.create(message=form.cleaned_data['message'], thread=thread, author=user)
+            return HttpResponseRedirect(reverse('forum:thread',
+                                                kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages}))
+    else:
+        form = PostForm()
     try:
         post_list = paginator.page(page)
     except PageNotAnInteger:
         post_list = paginator.page(1)
     except EmptyPage:
         post_list = paginator.page(paginator.num_pages)
-    return render(request, 'forum/thread.html', {'thread': td, 'posts': post_list})
+    return render(request, 'forum/thread.html', {'thread': thread, 'posts': post_list, 'form': form})
 
 
 def vote(request, post_pk, vote):
