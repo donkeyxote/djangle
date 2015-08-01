@@ -32,7 +32,7 @@ class Board(models.Model):
         return self.get_latest(num)
 
     def __str__(self):
-        return self.code
+        return self.name
 
 
 class User(AbstractUser):
@@ -83,6 +83,13 @@ class Thread(models.Model):
 
     def last_post(self):
         return self.post_set.last()
+
+    @classmethod
+    def create(cls, title, message, board, author, tag1=None, tag2=None, tag3=None):
+        thread = cls(title=title, board=board, tag1=tag1, tag2=tag2, tag3=tag3)
+        thread.save()
+        post = Post.create(message=message, thread=thread, author=author)
+        post.save()
 
 
 class Subscription(models.Model):

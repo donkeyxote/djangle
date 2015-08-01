@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Board, Thread, Post, Vote
-from .forms import PostForm, BoardForm
+from .forms import PostForm, BoardForm, ThreadForm
 
 # Create your views here.
 
@@ -57,7 +57,7 @@ def create_board(request):
             return redirect('forum:index')
     else:
         form = BoardForm()
-    return render(request, 'forum/create_board.html', {'form': form})
+    return render(request, 'forum/create.html', {'forms': [form]})
 
 
 def vote_view(request, post_pk, vote):
@@ -68,3 +68,24 @@ def vote_view(request, post_pk, vote):
     elif vote == 'down':
         Vote.vote(post=post, user=request.user, value=False)
     return HttpResponseRedirect(redirect_to)
+
+
+def create_thread(request):
+
+    if request.method == 'POST':
+        thread_form = ThreadForm(request.POST)
+        post_form = PostForm(request.POST)
+        if thread_form.is_valid() and post_form.is_valid():
+            thread = Thread.create(title=thread_form.cleaned_data['title'],
+                                   message=post_form.cleaned_data['message'],
+                                   board=thread_form.cleaned_data['board'],
+                                   author=request.user,
+                                   tag1=thread_form.cleaned_data['tag1'],
+                                   tag2=thread_form.cleaned_data['tag2'],
+                                   tag3=thread_form.cleaned_data['tag3'])
+            return HttpResponseRedirect(reverse('forum:board',
+                                                kwargs={'board_code': thread_form.cleaned_data['board'].code, 'page': ''}))
+    else:
+        thread_form = ThreadForm()
+        post_form = PostForm()
+    return render(request, 'forum/create.html', {'forms': [thread_form, post_form]})
