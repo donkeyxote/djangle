@@ -23,7 +23,6 @@ urlpatterns = [
     url(r'^forum/', include('forum.urls', namespace='forum')),
     url(r'^login/', views.login_view, name='login'),
     url(r'^logout/', views.logout_view, name='logout'),
-    url(r'^profile/', views.mainpage, name='profile'),
     url(r'^register/', views.register, name='register'),
     url(r'', include('django.contrib.auth.urls')),
 ]

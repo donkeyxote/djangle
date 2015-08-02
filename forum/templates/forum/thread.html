@@ -11,10 +11,10 @@
                 <div class="col-sm-2">
                     <div class="row">
                     <div class="col-xs-6 col-sm-12">
-                        <img src="{{ post.author.avatar }}" class="img-thumbnail" width="70"><br/>
+                        <a href="{% url 'forum:profile' post.author.username %}"><img src="{{ post.author.avatar }}" class="img-thumbnail" width="70"></a><br/>
                     </div>
                     <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
-                        <span class="glyphicon glyphicon-user"></span> {{ post.author }}<br/>
+                        <a href='{% url 'forum:profile' post.author.username %}' title="User"><span class="glyphicon glyphicon-user"></span> {{ post.author }}</a><br/>
                         <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ post.author.rep }}</a><br/>
                         <a title="Posts"><span class="glyphicon glyphicon-pencil"></span> {{ post.author.posts }}</a>
 
