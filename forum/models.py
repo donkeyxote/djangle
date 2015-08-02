@@ -3,6 +3,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+
 # Create your models here.
 
 alphanumeric = RegexValidator(r'^\w*$', 'Only alphanumeric characters are allowed.')
@@ -42,6 +43,13 @@ class User(AbstractUser):
     posts = models.PositiveIntegerField(default=0)
     threads = models.PositiveIntegerField(default=0)
 
+    def num_threads(self):
+        count = 0
+        for post in self.post_set.all():
+            if post == post.in_thread.first_post:
+                count += 1
+        return count
+
 
 class Post(models.Model):
     message = models.CharField(max_length=5000)
@@ -65,6 +73,13 @@ class Post(models.Model):
         author.posts += 1
         author.save()
         return post
+
+    def get_page(self, num):
+        older = self.in_thread.post_set.filter(pub_date__lte=self.pub_date).count()
+        pages = older//num
+        if older % num == 0:
+            return pages
+        return pages+1
 
 
 class Thread(models.Model):

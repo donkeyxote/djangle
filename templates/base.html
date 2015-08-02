@@ -28,7 +28,7 @@
                             <a href='/admin' id="auth">{{ request.user.username }}</a> | <a href='{% url 'logout' %}' id="auth">Logout</a>
                         {% else %}
                         <!--  Not temporary section -->
-                            <a href='{% url 'profile' %}' id="auth">{{ request.user.username }}</a> | <a href='{% url 'logout' %}' id="auth">Logout</a>
+                            <a href='{% url 'forum:profile' request.user.username %}' id="auth">{{ request.user.username }}</a> | <a href='{% url 'logout' %}' id="auth">Logout</a>
                         <!-- Temporary closure -->
                         {% endif %}
                         <!-- End of temporary section-->
