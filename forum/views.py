@@ -1,9 +1,11 @@
+from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Board, Thread, Post, Vote
+from .models import Board, Thread, Post, Vote, User
 from .forms import PostForm, BoardForm, ThreadForm
+from operator import itemgetter
 
 # Create your views here.
 
@@ -15,6 +17,7 @@ def index(request):
     return render(request, 'forum/index.html', {'boards': board_list})
 
 
+@login_required
 def board_view(request, board_code, page):
     board = get_object_or_404(Board, code=board_code)
     thread_set = board.get_latest()
@@ -28,6 +31,7 @@ def board_view(request, board_code, page):
     return render(request, 'forum/board.html', {'board': board, 'thread_set': thread_set})
 
 
+@login_required
 def thread_view(request, thread_pk, page):
     thread = get_object_or_404(Thread, pk=thread_pk)
     posts = thread.post_set.order_by('pub_date')
@@ -49,6 +53,7 @@ def thread_view(request, thread_pk, page):
     return render(request, 'forum/thread.html', {'thread': thread, 'posts': post_list, 'form': form})
 
 
+@login_required
 def create_board(request):
     if request.method == 'POST':
         form = BoardForm(request.POST)
@@ -60,6 +65,7 @@ def create_board(request):
     return render(request, 'forum/create.html', {'forms': [form]})
 
 
+@login_required
 def vote_view(request, post_pk, vote):
     redirect_to = request.REQUEST.get('next', '')
     post = get_object_or_404(Post, pk=post_pk)
@@ -70,8 +76,8 @@ def vote_view(request, post_pk, vote):
     return HttpResponseRedirect(redirect_to)
 
 
+@login_required
 def create_thread(request):
-
     if request.method == 'POST':
         thread_form = ThreadForm(request.POST)
         post_form = PostForm(request.POST)
@@ -89,3 +95,24 @@ def create_thread(request):
         thread_form = ThreadForm()
         post_form = PostForm()
     return render(request, 'forum/create.html', {'forms': [thread_form, post_form]})
+
+
+@login_required
+def profile(request, username):
+    user = get_object_or_404(User, username=username)
+    threads = []
+    top_threads=[]
+    posts = []
+    top_posts = []
+    if user.post_set.exists():
+        for post in user.post_set.all():
+            votes = post.pos_votes - post.neg_votes
+            if post.pk == post.in_thread.first_post.pk:
+                threads.append((post.in_thread, votes))
+            else:
+                posts.append((post, votes, post.get_page(ELEM_PER_PAGE)))
+        posts.sort(key=itemgetter(1), reverse=True)
+        top_posts = posts[:5]
+        threads.sort(key=itemgetter(1), reverse=True)
+        top_threads = threads[:5]
+    return render(request, 'forum/profile.html', {'user':user,'top_threads':top_threads, 'top_posts':top_posts})
