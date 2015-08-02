@@ -1,0 +1,72 @@
+{%  extends 'forum/base.html' %}
+{% load staticfiles %}
+{%  block titlesection %}- {{ user.username }}{%  endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
+{% endblock %}
+{% block body %}
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="row">
+                    <div class="col-xs-6 col-sm-12">
+                        <img src="{{ user.avatar }}"><br/>
+                    </div>
+                    <div class="col-xs-6 col-sm-12 text-right-xs lead" id="user-details">
+                        <span class="glyphicon glyphicon-user"></span> {{ user.username }}<br/>
+                        <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ user.rep }}</a><br/>
+                        <a title="Threads"><span class="glyphicon glyphicon-file"></span> {{ user.num_threads }}</a><br/>
+                        <a title="Posts"><span class="glyphicon glyphicon-pencil"></span> {{ user.posts }}</a><br/>
+
+                        {% if user.username in request.user.username %}
+                            <a href="#" role="button" class="btn btn-default">Edit profile</a>
+                        {% endif %}
+
+                    </div>
+            </div>
+        </div>
+        <div class="col-sm-8">
+            {% if top_threads %}
+                <div class="well well-sm">
+                    top threads
+                </div>
+                <ul class="list-group">
+                    {% for thread, vote in top_threads %}
+                        <a href="{% url 'forum:thread' thread.pk ''%}">
+                            <li class="list-group-item">
+                                <span class="badge" id="neg_badge">
+                                    {{ thread.first_post.neg_votes }}
+                                </span>
+                                <span class="badge" id="pos_badge">
+                                    {{ thread.first_post.pos_votes }}
+                                </span>
+                                {{ thread }}
+                            </li>
+                        </a>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if top_posts %}
+                <div class="well well-sm">
+                    top posts
+                </div>
+                <ul class="list-group">
+                    {% for post, vote, page in top_posts %}
+                        <a href="{% url 'forum:thread' post.in_thread.pk page %}#{{ post.pk }}">
+                            <li class="list-group-item">
+                                <span class="badge" id="neg_badge">
+                                    {{ post.neg_votes }}
+                                </span>
+                                <span class="badge" id="pos_badge">
+                                    {{ post.pos_votes }}
+                                </span>
+                                {{ post }}
+                            </li>
+                        </a>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+
+        </div>
+    </div>
+{% endblock %}

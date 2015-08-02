@@ -1,15 +1,24 @@
 from operator import attrgetter
+from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+
 # Create your models here.
+
+alphanumeric = RegexValidator(r'^\w*$', 'Only alphanumeric characters are allowed.')
 
 
 class Board(models.Model):
-    name = models.CharField(max_length=50)
-    code = models.CharField(max_length=10)
+    name = models.CharField(max_length=50, unique=True)
+    code = models.CharField(max_length=10, unique=True, validators=[alphanumeric])
 
-    def get_latest(self, num=5):
+    @classmethod
+    def create(cls, name, code):
+        board = cls(name=name, code=code)
+        board.save()
+
+    def get_latest(self, num=None):
         latest_posts = []
         for thread in self.thread_set.all():
             if thread.last_post() is not None:
@@ -20,8 +29,11 @@ class Board(models.Model):
             latest_threads.append(post.in_thread)
         return latest_threads
 
+    def get_new(self, num=5):
+        return self.get_latest(num)
+
     def __str__(self):
-        return self.code
+        return self.name
 
 
 class User(AbstractUser):
@@ -30,6 +42,13 @@ class User(AbstractUser):
     avatar = models.ImageField(default='/static/djangle/images/Djangle_logo.png')
     posts = models.PositiveIntegerField(default=0)
     threads = models.PositiveIntegerField(default=0)
+
+    def num_threads(self):
+        count = 0
+        for post in self.post_set.all():
+            if post == post.in_thread.first_post:
+                count += 1
+        return count
 
 
 class Post(models.Model):
@@ -51,7 +70,16 @@ class Post(models.Model):
         if post.in_thread.first_post is None:
             post.in_thread.first_post = post
         post.in_thread.save()
+        author.posts += 1
+        author.save()
         return post
+
+    def get_page(self, num):
+        older = self.in_thread.post_set.filter(pub_date__lte=self.pub_date).count()
+        pages = older//num
+        if older % num == 0:
+            return pages
+        return pages+1
 
 
 class Thread(models.Model):
@@ -71,6 +99,14 @@ class Thread(models.Model):
     def last_post(self):
         return self.post_set.last()
 
+    @classmethod
+    def create(cls, title, message, board, author, tag1=None, tag2=None, tag3=None):
+        thread = cls(title=title, board=board, tag1=tag1, tag2=tag2, tag3=tag3)
+        thread.save()
+        post = Post.create(message=message, thread=thread, author=author)
+        post.save()
+        return thread
+
 
 class Subscription(models.Model):
     thread = models.ForeignKey(Thread)
@@ -85,6 +121,63 @@ class Vote(models.Model):
     post = models.ForeignKey(Post)
     user = models.ForeignKey(User)
     value = models.BooleanField()
+
+    class Meta:
+        unique_together = (('post', 'user'),)
+
+    @classmethod
+    def vote(cls, post, user, value):
+        if user == post.author:
+            return
+        vote = Vote.objects.filter(post=post, user=user).first()
+        if vote is None:
+            vote = cls(post=post, user=user, value=value)
+            vote.save()
+            if value:
+                post.pos_votes += 1
+                post.author.rep += 1
+                post.save()
+                post.author.save()
+            else:
+                post.neg_votes += 1
+                post.author.rep -= 1
+                post.save()
+                post.author.save()
+            return vote
+        else:
+            if value:
+                if not vote.value:
+                    vote.value = value
+                    post.pos_votes += 1
+                    post.neg_votes -= 1
+                    post.author.rep += 2
+                    vote.save()
+                    post.save()
+                    post.author.save()
+                else:
+                    post.pos_votes -= 1
+                    post.author.rep -= 1
+                    vote.delete()
+                    post.save()
+                    post.author.save()
+                    return
+            else:
+                if vote.value:
+                    vote.value = value
+                    post.pos_votes -= 1
+                    post.neg_votes += 1
+                    post.author.rep -= 2
+                    vote.save()
+                    post.save()
+                    post.author.save()
+                else:
+                    post.neg_votes -= 1
+                    post.author.rep += 1
+                    vote.delete()
+                    post.save()
+                    post.author.save()
+                    return vote
+        return
 
 
 class Ban(models.Model):

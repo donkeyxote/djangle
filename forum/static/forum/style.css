@@ -1,5 +1,6 @@
 .boards{
     background-color: #ffe89c;
+    padding-left: 25px;
 }
 
 #board{
@@ -10,6 +11,15 @@
 #board:hover, .boards:hover{
     text-decoration: none;
     background-color: #ffd75a;
+}
+
+.pagination>.active>a{
+    background-color: #ff9900;
+    border-color: #ff9900;
+}
+
+.pagination>li>a{
+    color: #ff9900;
 }
 
 .well{
@@ -24,10 +34,41 @@
     color: #008000;
 }
 
+#pos_badge{
+    background-color: #008800;
+}
+
 #neg_votes{
     color: #CC0000;
 }
 
+#neg_badge{
+    background-color: #CC0000;
+}
+
+#voted{
+    color:#00ee00;
+}
+
 #last{
     width: 20%;
+}
+
+#user-details{
+    margin-bottom: 20px;
+    color:#666;
+}
+
+#user-details>a{
+    color:#666;
+    text-decoration: none;
+    font-weight: normal;
+}
+
+.img-thumbnail{
+    margin-bottom: 10px;
+}
+
+.glyphicon{
+    margin: 5px auto;
 }

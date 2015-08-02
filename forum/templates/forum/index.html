@@ -4,11 +4,10 @@
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
-{% block subtitle %}Forum Index{%  endblock %}
 {% block body %}
     {%  if boards %}
         {% for board in boards %}
-            <a href="#" id="board"><div class="well well-sm boards lead">{{ board.name }}</div></a>
+            <a href="{%  url 'forum:board' board.code none %}" id="board"><div class="well well-sm boards lead">{{ board.name }}</div></a>
             <div class="row">
                 <div class="col-md-1 hidden-xs"></div>
                 <div class="col-md-11 col-xs-12">
@@ -22,15 +21,15 @@
                                     <th id="last">Last Post</th>
                                 </tr>
                             </thead>
-                            {% for thread in board.get_latest %}
+                            {% for thread in board.get_new %}
                                 {% if thread.last_post %}
                                     <tr>
-                                        <td id="thread"><a href="#">{{ thread }}</a>
-                                            by <a href=#>{{ thread.first_post.author }}</a></td>
+                                        <td id="thread"><a href="{% url 'forum:thread' thread.pk 1 %}">{{ thread }}</a>
+                                            by <a href='{% url 'forum:profile' thread.first_post.author.username %}'>{{ thread.first_post.author }}</a></td>
                                         <td id="replies"><script> document.write({{ thread.post_set.all.count }} - 1)</script></td>
                                         <td id="votes"><p id="pos_votes">&#9650; {{ thread.first_post.pos_votes }}</p><p id="neg_votes">&#9660; {{ thread.first_post.neg_votes }}</p></td>
                                         <td id="last"><a href="#">{{ thread.last_post.pub_date|date:'Y-m-d H:i' }}</a><br/>
-                                            <a href=#>{{ thread.last_post.author }}</a></td>
+                                            <a href='{% url 'forum:profile' thread.last_post.author.username %}'>{{ thread.last_post.author }}</a></td>
                                     </tr>
                                 {% endif %}
                             {% endfor %}

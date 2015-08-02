@@ -1,0 +1,20 @@
+{%  extends 'forum/base.html' %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{%  block titlesection %}- {{ thread }}{%  endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
+{% endblock %}
+{% block body %}
+    <section>
+        <form method="post">
+            {% csrf_token %}
+            <table id="board">
+                {% for form in forms %}
+                    {{ form|crispy }}
+                {% endfor %}
+            </table>
+                <input type="submit" value="Create" class="btn btn-default" />
+            </form>
+        </section>
+{% endblock %}
