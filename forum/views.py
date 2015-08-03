@@ -101,7 +101,7 @@ def create_thread(request):
 def profile(request, username):
     user = get_object_or_404(User, username=username)
     threads = []
-    top_threads=[]
+    top_threads = []
     posts = []
     top_posts = []
     if user.post_set.exists():
@@ -115,4 +115,4 @@ def profile(request, username):
         top_posts = posts[:5]
         threads.sort(key=itemgetter(1), reverse=True)
         top_threads = threads[:5]
-    return render(request, 'forum/profile.html', {'user':user,'top_threads':top_threads, 'top_posts':top_posts})
+    return render(request, 'forum/profile.html', {'user': user, 'top_threads': top_threads, 'top_posts': top_posts})

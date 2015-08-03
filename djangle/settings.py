@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import configparser
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -115,3 +116,14 @@ STATICFILES_DIRS = (
 AUTH_USER_MODEL = 'forum.User'
 
 LOGIN_URL = '/login'
+
+config = configparser.RawConfigParser()
+config.read(os.path.join(BASE_DIR,'config.ini'))
+
+EMAIL_HOST = config.get('email', 'EMAIL_HOST')
+EMAIL_PORT = config.getint('email', 'EMAIL_PORT')
+EMAIL_HOST_USER = config.get('email', 'EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config.get('email', 'EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = config.getboolean('email', 'EMAIL_USE_TLS')
+EMAIL_USE_SSL = config.getboolean('email', 'EMAIL_USE_SSL')
+DEFAULT_FROM_EMAIL = config.get('email', 'DEFAULT_FROM_EMAIL')

@@ -8,3 +8,6 @@ forum/migrations/
 
 #PyCharm stuff
 .idea/
+
+#host configuration file
+config.ini
