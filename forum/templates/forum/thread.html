@@ -17,7 +17,6 @@
                         <a href='{% url 'forum:profile' post.author.username %}' title="User"><span class="glyphicon glyphicon-user"></span> {{ post.author }}</a><br/>
                         <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ post.author.rep }}</a><br/>
                         <a title="Posts"><span class="glyphicon glyphicon-pencil"></span> {{ post.author.posts }}</a>
-
                     </div>
                     </div>
                 </div>
@@ -31,7 +30,10 @@
                         <div class="panel-body">
                             <div class="row">
                                 <div class="col-sm-9">
-                                    <span class="small text-muted">{{ post.pub_date|date:'Y-m-d H:i' }}</span><br/>
+                                    <span class="small text-muted">{{ post.pub_date|date:'Y-m-d H:i' }}</span>
+                                    {% if post.author.username in request.user.username %}
+                                        <a href="{% url 'forum:del_post' post.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Are you sure?')">Delete Post</a>
+                                    {% endif %}<br/>
                                     <div>{{ post.message|linebreaksbr }}</div>
                                 </div>
                                 <div class="col-sm-3 text-right-not-xs text-left-xs">

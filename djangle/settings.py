@@ -118,7 +118,7 @@ AUTH_USER_MODEL = 'forum.User'
 LOGIN_URL = '/login'
 
 config = configparser.RawConfigParser()
-config.read(os.path.join(BASE_DIR,'config.ini'))
+config.read(os.path.join(BASE_DIR, 'config.ini'))
 
 EMAIL_HOST = config.get('email', 'EMAIL_HOST')
 EMAIL_PORT = config.getint('email', 'EMAIL_PORT')

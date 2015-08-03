@@ -116,3 +116,13 @@ def profile(request, username):
         threads.sort(key=itemgetter(1), reverse=True)
         top_threads = threads[:5]
     return render(request, 'forum/profile.html', {'user': user, 'top_threads': top_threads, 'top_posts': top_posts})
+
+
+@login_required
+def del_post(request, post_pk):
+    redirect_to = request.REQUEST.get('next', '')
+    post = get_object_or_404(Post, pk=post_pk)
+    post.author.posts -= 1
+    post.author.save()
+    post.delete()
+    return HttpResponseRedirect(redirect_to)
