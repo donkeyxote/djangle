@@ -26,6 +26,10 @@ a:visited {
 	text-decoration: none;
 }
 
+.alert>ul{
+    list-style: none;
+}
+
 .text-left-not-xs, .text-left-not-sm, .text-left-not-md, .text-left-not-lg {
     text-align: left;
 }
@@ -162,7 +166,7 @@ header {
     text-shadow: none;
 }
 
-.navbar-link:link, .navbar-link:visited, .navbar-link:hover, .navbar-brand{
+.navbar-link:link, .navbar-link:visited, .navbar-link:hover, .navbar-brand, .navbar-brand:hover{
     float:left;
     height:50px;
     padding:15px 15px;

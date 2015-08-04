@@ -24,19 +24,34 @@
                     <div class="panel panel-default">
                         {% if post == thread.first_post %}
                             <div class="panel-heading">
-                                <span class="lead">{{ thread.title }}</span>
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <span class="lead">{{ thread.title }}</span>
+                                    </div>
+                                    <div class="col-sm-3 text-right">
+                                        {% if post.author.username in request.user.username %}
+                                            <a href="{% url 'forum:del_thread' thread.pk %}" class="btn btn-default" onclick="return confirm('Are you sure?')" id="delete">Delete Thread</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         {% endif %}
                         <div class="panel-body">
                             <div class="row">
                                 <div class="col-sm-9">
-                                    <span class="small text-muted">{{ post.pub_date|date:'Y-m-d H:i' }}</span>
-                                    {% if post.author.username in request.user.username %}
-                                        <a href="{% url 'forum:del_post' post.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Are you sure?')">Delete Post</a>
-                                    {% endif %}<br/>
+                                    <span class="small text-muted">{{ post.pub_date|date:'Y-m-d H:i' }}</span><br/>
                                     <div>{{ post.message|linebreaksbr }}</div>
                                 </div>
-                                <div class="col-sm-3 text-right-not-xs text-left-xs">
+                                <div class="col-sm-3 text-right">
+                                    {% if post.author.username in request.user.username and post != thread.first_post %}
+                                        <a href="{% url 'forum:del_post' post.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Are you sure?')" id="delete">Delete Post</a>
+                                        <span class="badge" id="pos_badge">
+                                            {{ post.pos_votes }}
+                                        </span>
+                                        <span class="badge" id="neg_badge">
+                                            {{ post.neg_votes }}
+                                        </span>
+                                    {% else %}
                                     <a href="{% url 'forum:pos_vote' post.pk 'up' %}?next={{ request.get_full_path|urlencode }}#{{ post.pk }}">
                                         <span class="badge" id="pos_badge">
                                             {{ post.pos_votes }}
@@ -47,6 +62,7 @@
                                             {{ post.neg_votes }}
                                         </span>
                                     </a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

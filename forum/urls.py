@@ -10,5 +10,6 @@ urlpatterns = [
     url(r'^post/(?P<post_pk>\d+)/(?P<vote>up)/?$', views.vote_view, name='pos_vote'),
     url(r'^post/(?P<post_pk>\d+)/(?P<vote>down)/?$', views.vote_view, name='neg_vote'),
     url(r'^profile/(?P<username>\w+)/$', views.profile, name='profile'),
-    url(r'^delete/post/(?P<post_pk>\d+)/$', views.del_post, name='del_post')
+    url(r'^delete/post/(?P<post_pk>\d+)/$', views.del_post, name='del_post'),
+    url(r'^delete/thread/(?P<thread_pk>\d+)', views.del_thread, name='del_thread')
 ]

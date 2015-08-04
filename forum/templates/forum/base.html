@@ -2,7 +2,7 @@
 {% block subtitle %}<a href="{% url 'forum:index' %}" class="navbar-link">Forum</a>{%  endblock %}
 {% block menu %}
     {% if user.is_authenticated %}
-        <li><a href='{% url 'forum:index' %}' id="menuNavbar">New Thread</a></li>
+        <li><a href='{% url 'forum:create_thread' %}' id="menuNavbar">New Thread</a></li>
     {% endif %}
 {% endblock %}
 

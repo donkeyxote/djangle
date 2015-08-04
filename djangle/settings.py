@@ -115,3 +115,5 @@ STATICFILES_DIRS = (
 AUTH_USER_MODEL = 'forum.User'
 
 LOGIN_URL = '/login'
+
+ELEM_PER_PAGE = 20

@@ -54,6 +54,11 @@
     width: 20%;
 }
 
+#delete{
+    margin: 5px auto;
+}
+
+
 #user-details{
     margin-bottom: 20px;
     color:#666;
@@ -72,3 +77,4 @@
 .glyphicon{
     margin: 5px auto;
 }
+
