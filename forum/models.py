@@ -3,6 +3,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from djangle.settings import ELEM_PER_PAGE
 
 # Create your models here.
 
@@ -74,10 +75,16 @@ class Post(models.Model):
         author.save()
         return post
 
-    def get_page(self, num):
+    def remove(self):
+        self.author.posts -= 1
+        self.author.save()
+        self.delete()
+        return
+
+    def get_page(self):
         older = self.in_thread.post_set.filter(pub_date__lte=self.pub_date).count()
-        pages = older//num
-        if older % num == 0:
+        pages = older//ELEM_PER_PAGE
+        if older % ELEM_PER_PAGE == 0:
             return pages
         return pages+1
 
@@ -106,6 +113,12 @@ class Thread(models.Model):
         post = Post.create(message=message, thread=thread, author=author)
         post.save()
         return thread
+
+    def remove(self):
+        for post in self.post_set.all():
+            post.remove()
+        self.delete()
+        return
 
 
 class Subscription(models.Model):

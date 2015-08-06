@@ -6,10 +6,9 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Board, Thread, Post, Vote, User
 from .forms import PostForm, BoardForm, ThreadForm
 from operator import itemgetter
+from djangle.settings import ELEM_PER_PAGE
 
 # Create your views here.
-
-ELEM_PER_PAGE = 20
 
 
 def index(request):
@@ -110,7 +109,7 @@ def profile(request, username):
             if post.pk == post.in_thread.first_post.pk:
                 threads.append((post.in_thread, votes))
             else:
-                posts.append((post, votes, post.get_page(ELEM_PER_PAGE)))
+                posts.append((post, votes, post.get_page))
         posts.sort(key=itemgetter(1), reverse=True)
         top_posts = posts[:5]
         threads.sort(key=itemgetter(1), reverse=True)
@@ -122,7 +121,14 @@ def profile(request, username):
 def del_post(request, post_pk):
     redirect_to = request.REQUEST.get('next', '')
     post = get_object_or_404(Post, pk=post_pk)
-    post.author.posts -= 1
-    post.author.save()
-    post.delete()
+    post.remove()
     return HttpResponseRedirect(redirect_to)
+
+
+@login_required
+def del_thread(request, thread_pk):
+    thread = get_object_or_404(Thread, pk=thread_pk)
+    board = thread.board
+    for post in thread.post_set.all():
+        post.remove()
+    return HttpResponseRedirect(reverse('forum:board', kwargs={'board_code': board.code, 'page': ''}))

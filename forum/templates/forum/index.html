@@ -28,7 +28,7 @@
                                             by <a href='{% url 'forum:profile' thread.first_post.author.username %}'>{{ thread.first_post.author }}</a></td>
                                         <td id="replies"><script> document.write({{ thread.post_set.all.count }} - 1)</script></td>
                                         <td id="votes"><p id="pos_votes">&#9650; {{ thread.first_post.pos_votes }}</p><p id="neg_votes">&#9660; {{ thread.first_post.neg_votes }}</p></td>
-                                        <td id="last"><a href="#">{{ thread.last_post.pub_date|date:'Y-m-d H:i' }}</a><br/>
+                                        <td id="last"><a href="{% url 'forum:thread' thread.pk thread.last_post.get_page %}#{{ thread.last_post.pk }}">{{ thread.last_post.pub_date|date:'Y-m-d H:i' }}</a><br/>
                                             <a href='{% url 'forum:profile' thread.last_post.author.username %}'>{{ thread.last_post.author }}</a></td>
                                     </tr>
                                 {% endif %}

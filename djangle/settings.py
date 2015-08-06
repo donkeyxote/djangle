@@ -127,3 +127,6 @@ EMAIL_HOST_PASSWORD = config.get('email', 'EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = config.getboolean('email', 'EMAIL_USE_TLS')
 EMAIL_USE_SSL = config.getboolean('email', 'EMAIL_USE_SSL')
 DEFAULT_FROM_EMAIL = config.get('email', 'DEFAULT_FROM_EMAIL')
+
+
+ELEM_PER_PAGE = 20
