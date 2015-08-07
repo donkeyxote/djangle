@@ -1,10 +1,11 @@
+import os
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Board, Thread, Post, Vote, User
-from .forms import PostForm, BoardForm, ThreadForm
+from .forms import PostForm, BoardForm, ThreadForm, UserEditForm
 from operator import itemgetter
 from djangle.settings import ELEM_PER_PAGE
 
@@ -132,3 +133,58 @@ def del_thread(request, thread_pk):
     for post in thread.post_set.all():
         post.remove()
     return HttpResponseRedirect(reverse('forum:board', kwargs={'board_code': board.code, 'page': ''}))
+
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        if not request.FILES:
+            form = UserEditForm(request.POST)
+            if form.is_valid():
+                if form.cleaned_data['first_name']:
+                    request.user.first_name = form.cleaned_data['first_name']
+                    request.user.save()
+                if form.cleaned_data['last_name']:
+                    request.user.last_name = form.cleaned_data['last_name']
+                    request.user.save()
+        else:
+            form = UserEditForm(request.POST, request.FILES)
+            try:
+                check = form.is_valid()
+            except:
+                check = False
+            if check and form.cleaned_data['avatar']:
+                image = form.cleaned_data['avatar']
+                if image.size > 200 * 1024:
+                    return render(request, 'forum/profile_edit.html')
+                type = image.name.rsplit('.', 1)[1]
+                if type in ('jpg', 'jpeg', 'gif', 'png'):
+                    image.name = request.user.username+'.'+type
+                    if not request.user.avatar.name.endswith('Djangle_user_default.png'):
+                        img_del = request.user.avatar.path
+                        try:
+                            os.remove(img_del)
+                        except:
+                            pass
+                    request.user.avatar = image
+                    request.user.save()
+            else:
+                form = UserEditForm()
+                return render(request, 'forum/profile_edit.html',
+                              {'form': form, 'user': request.user, 'error': 'Form not valid'})
+    else:
+        form = UserEditForm()
+    return render(request, 'forum/profile_edit.html', {'form': form, 'user': request.user})
+
+
+@login_required
+def reset_user_field(request, field):
+    if field == 'first_name':
+        request.user.first_name = ''
+        request.user.save()
+    elif field == 'last_name':
+        request.user.last_name = ''
+        request.user.save()
+    elif field == 'avatar':
+        request.user.reset_avatar()
+    return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': request.user.username}))

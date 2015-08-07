@@ -1,8 +1,10 @@
 from operator import attrgetter
+import os
 from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from xdg.Exceptions import ValidationError
 from djangle.settings import ELEM_PER_PAGE
 
 # Create your models here.
@@ -38,9 +40,16 @@ class Board(models.Model):
 
 
 class User(AbstractUser):
+
+    def validate_image(fieldfile_obj):
+        filesize = fieldfile_obj.file.size
+        kilobyte_limit = 200
+        if filesize > kilobyte_limit*1024:
+            raise ValidationError("Max file size is %sKB" % str(kilobyte_limit))
+
     models.EmailField.unique = True
     rep = models.IntegerField(default=0)
-    avatar = models.ImageField(default='/static/djangle/images/Djangle_user_default.png')
+    avatar = models.ImageField(upload_to='prof_pic', default='/static/djangle/images/prof_pic/Djangle_user_default.png', validators=[validate_image])
     posts = models.PositiveIntegerField(default=0)
     threads = models.PositiveIntegerField(default=0)
 
@@ -50,6 +59,16 @@ class User(AbstractUser):
             if post == post.in_thread.first_post:
                 count += 1
         return count
+
+    def reset_avatar(self):
+        if self.avatar.name is not 'prof_pic/Djangle_user_default.png':
+            img = self.avatar.path
+            try:
+                os.remove(img)
+            except:
+                pass
+            self.avatar = 'prof_pic/Djangle_user_default.png'
+            self.save()
 
 
 class Post(models.Model):

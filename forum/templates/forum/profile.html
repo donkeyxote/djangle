@@ -9,16 +9,17 @@
         <div class="col-sm-4">
             <div class="row">
                     <div class="col-xs-6 col-sm-12">
-                        <img src="{{ user.avatar }}"><br/>
+                         <img src="{{ user.avatar.url }}" alt="user avatar" width="200" height="200">
                     </div>
                     <div class="col-xs-6 col-sm-12 text-right-xs lead" id="user-details">
+                        {{ user.first_name }} {{ user.last_name }}<br/>
                         <span class="glyphicon glyphicon-user"></span> {{ user.username }}<br/>
                         <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ user.rep }}</a><br/>
                         <a title="Threads"><span class="glyphicon glyphicon-file"></span> {{ user.num_threads }}</a><br/>
                         <a title="Posts"><span class="glyphicon glyphicon-pencil"></span> {{ user.posts }}</a><br/>
 
                         {% if user.username in request.user.username %}
-                            <a href="#" role="button" class="btn btn-default">Edit profile</a>
+                            <a href="{% url 'forum:edit_profile' %}" role="button" class="btn btn-default">Edit profile</a>
                         {% endif %}
 
                     </div>
