@@ -63,6 +63,9 @@ class Post(models.Model):
     def __str__(self):
         return self.message[:50]
 
+    class Meta:
+        get_latest_by = 'pub_date'
+
     @classmethod
     def create(cls, message, thread, author):
         pub_date = timezone.now()
@@ -83,10 +86,10 @@ class Post(models.Model):
 
     def get_page(self):
         older = self.in_thread.post_set.filter(pub_date__lte=self.pub_date).count()
-        pages = older//ELEM_PER_PAGE
+        pages = older // ELEM_PER_PAGE
         if older % ELEM_PER_PAGE == 0:
             return pages
-        return pages+1
+        return pages + 1
 
 
 class Thread(models.Model):
@@ -126,8 +129,15 @@ class Subscription(models.Model):
     user = models.ForeignKey(User)
     async = models.BooleanField(default=True)
     sync_interval = models.DurationField('sync interval', blank=True, null=True, default=None)
-    last_sync = models.DateTimeField('last syncronization', blank=True, null=True, default=None)
+    last_sync = models.DateTimeField('last synchronization', blank=True, null=True, default=None)
     active = models.BooleanField(default=True)
+
+    def is_expired(self, time=timezone.now()):
+        return ((self.last_sync + self.sync_interval < time) and
+                (self.thread.post_set.latest().pub_date > self.last_sync))
+
+    class Meta:
+        unique_together = (('thread', 'user'),)
 
 
 class Vote(models.Model):

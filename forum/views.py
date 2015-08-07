@@ -132,3 +132,22 @@ def del_thread(request, thread_pk):
     for post in thread.post_set.all():
         post.remove()
     return HttpResponseRedirect(reverse('forum:board', kwargs={'board_code': board.code, 'page': ''}))
+'''
+def create_subscription(request):
+    if request.method == 'POST':
+        form = SubForm(request.POST)
+        if form.is_valid():
+            sub = Subscription(thread=form.cleaned_data['thread'],
+                               message=post_form.cleaned_data['message'],
+                                   board=thread_form.cleaned_data['board'],
+                                   author=request.user,
+                                   tag1=thread_form.cleaned_data['tag1'],
+                                   tag2=thread_form.cleaned_data['tag2'],
+                                   tag3=thread_form.cleaned_data['tag3'])
+            return HttpResponseRedirect(reverse('forum:thread',
+                                                kwargs={'thread_pk': thread.pk, 'page': ''}))
+    else:
+        thread_form = ThreadForm()
+        post_form = PostForm()
+    return render(request, 'forum/create.html', {'forms': [thread_form, post_form]})
+'''

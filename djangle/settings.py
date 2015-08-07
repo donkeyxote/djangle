@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'djangle.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': config.get('database', 'ENGINE'),
-        'NAME': config.get ('database', 'NAME'),
+        'NAME': config.get('database', 'NAME'),
         'USER': config.get('database', 'USER'),
         'PASSWORD': config.get('database', 'PASSWORD'),
         'HOST': config.get('database', 'HOST'),
@@ -133,7 +133,7 @@ EMAIL_USE_TLS = config.getboolean('email', 'EMAIL_USE_TLS')
 EMAIL_USE_SSL = config.getboolean('email', 'EMAIL_USE_SSL')
 DEFAULT_FROM_EMAIL = config.get('email', 'DEFAULT_FROM_EMAIL')
 
-EMAIL_SUBJECT_PREFIX='[Djangle] '
+EMAIL_SUBJECT_PREFIX = '[Djangle] '
 
 
 ELEM_PER_PAGE = 20
