@@ -9,6 +9,6 @@ def mail():
     send_mail(EMAIL_SUBJECT_PREFIX+'update from your subscriptions',
               'Here is the message.',
               None,
-              ['test@gmail.com'],
+              ['djangleproject@gmail.com'],
               fail_silently=False
               )

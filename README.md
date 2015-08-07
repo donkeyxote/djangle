@@ -1,40 +1,62 @@
-djangle - a django jungle forum
 
-dependencies and higly recommended packages:
+# djangle
+### a django jungle forum
 
-- python 3.4
-- django v1.8
-- pytz
-- pillow
-- dbms and support libraries for python
-- django crispy forms (included in project source)
-- kombu
-- python-celery
+## dependencies and highly recommended packages:
 
-instructions for sending asynchronous mails:
+* python 3.4
+* django v1.8
+* pytz
+* pillow
+* dbms and support libraries for python
+* django crispy forms (included in project source)
+* kombu
+* celery
 
-    big fat warning:
-        database is used as message queue: switching to other message brokers (e.g. redditmq) is higly recommended for
-        production purposes.
+## configuration instruction
 
-    1) move to project directory
+configure database and email settings by editing file *config.ini* (fields' names are self-explanatory)
 
-        $ cd /path/to/djangle
+## initialization and run
 
-    2) run a celery worker
+move to project directory
 
-        $ celery -A djangle worker -l info
+    $ cd /path/to/djangle
+    
+synchronize the database state with the current set of models
 
-    3) start celery beat service
+    $ python3 manage.py migrate
+    
+create a superuser for django admin
 
-        $ celery -A djangle beat
+    $ python3 manage.py createsuperuser
 
+let the show begin
 
-    you can also start embed beat inside the worker by enabling workers -B option, this is convenient if you will never
-    run more than one worker node.
+    $ python3 manage.py runserver
+    
+## instructions for sending asynchronous mails:
 
-        $ celery -A djangle worker -B -l info
+**big fat warning:**
+> django database is used as message queue: moving to other message brokers (e.g. redditmq) is highly recommended for
+> production purposes.
 
-    celery can be demonized by following the instructions provided in celery documentation (link below):
+move to project directory
 
-        http://docs.celeryproject.org/en/latest/tutorials/daemonizing.html
+    $ cd /path/to/djangle
+
+run a celery worker
+
+    $ celery -A djangle worker -l info
+
+start celery beat service
+
+    $ celery -A djangle beat
+
+you can also start embed beat inside the worker by enabling workers -B option, this is convenient if you will never
+run more than one worker node.
+
+    $ celery -A djangle worker -B -l info
+
+celery can be demonized by following the instructions provided in the [celery documentation]
+(http://docs.celeryproject.org/en/latest/tutorials/daemonizing.html)

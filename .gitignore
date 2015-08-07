@@ -2,7 +2,7 @@
 __pycache__/
 *.pyc
 
-#Database stuff
+#Database
 db.sqlite3
 init_db.py
 forum/migrations/
@@ -10,5 +10,8 @@ forum/migrations/
 #PyCharm stuff
 .idea/
 
-#host configuration file
+#Host configuration file
 config.ini
+
+#Celery
+celerybeat-schedule

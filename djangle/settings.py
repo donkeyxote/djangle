@@ -17,6 +17,8 @@ from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+config = configparser.RawConfigParser()
+config.read(os.path.join(BASE_DIR, 'config.ini'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -83,8 +85,12 @@ WSGI_APPLICATION = 'djangle.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': config.get('database', 'ENGINE'),
+        'NAME': config.get ('database', 'NAME'),
+        'USER': config.get('database', 'USER'),
+        'PASSWORD': config.get('database', 'PASSWORD'),
+        'HOST': config.get('database', 'HOST'),
+        'PORT': config.get('database', 'PORT'),
     }
 }
 
@@ -118,9 +124,6 @@ STATICFILES_DIRS = (
 AUTH_USER_MODEL = 'forum.User'
 
 LOGIN_URL = '/login'
-
-config = configparser.RawConfigParser()
-config.read(os.path.join(BASE_DIR, 'config.ini'))
 
 EMAIL_HOST = config.get('email', 'EMAIL_HOST')
 EMAIL_PORT = config.getint('email', 'EMAIL_PORT')
