@@ -13,9 +13,12 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import configparser
+from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+config = configparser.RawConfigParser()
+config.read(os.path.join(BASE_DIR, 'config.ini'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -40,6 +43,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'crispy_forms',
     'forum',
+    'kombu.transport.django',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -81,8 +85,12 @@ WSGI_APPLICATION = 'djangle.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': config.get('database', 'ENGINE'),
+        'NAME': config.get('database', 'NAME'),
+        'USER': config.get('database', 'USER'),
+        'PASSWORD': config.get('database', 'PASSWORD'),
+        'HOST': config.get('database', 'HOST'),
+        'PORT': config.get('database', 'PORT'),
     }
 }
 
@@ -120,9 +128,6 @@ AUTH_USER_MODEL = 'forum.User'
 
 LOGIN_URL = '/login'
 
-config = configparser.RawConfigParser()
-config.read(os.path.join(BASE_DIR, 'config.ini'))
-
 EMAIL_HOST = config.get('email', 'EMAIL_HOST')
 EMAIL_PORT = config.getint('email', 'EMAIL_PORT')
 EMAIL_HOST_USER = config.get('email', 'EMAIL_HOST_USER')
@@ -131,5 +136,16 @@ EMAIL_USE_TLS = config.getboolean('email', 'EMAIL_USE_TLS')
 EMAIL_USE_SSL = config.getboolean('email', 'EMAIL_USE_SSL')
 DEFAULT_FROM_EMAIL = config.get('email', 'DEFAULT_FROM_EMAIL')
 
+EMAIL_SUBJECT_PREFIX = '[Djangle] '
+
 
 ELEM_PER_PAGE = 20
+
+BROKER_URL = 'django://'
+
+CELERYBEAT_SCHEDULE = {
+    'add-every-30-seconds': {
+        'task': 'forum.tasks.mail',
+        'schedule': timedelta(seconds=30),
+    },
+}
