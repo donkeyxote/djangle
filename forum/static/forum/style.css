@@ -72,6 +72,12 @@
 
 .img-thumbnail{
     margin-bottom: 10px;
+    height: 70px;
+    width: 70px;
+}
+
+.img-profile{
+    max-height: 200px;
 }
 
 .glyphicon{

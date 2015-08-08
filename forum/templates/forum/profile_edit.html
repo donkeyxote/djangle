@@ -17,7 +17,7 @@
                     <div class="col-xs-6 col-sm-12">
                         	<div class="profile-pic">
                                 <a title="edit" data-toggle="modal" data-target="#change-image">
-                                    <img src="{{ user.avatar.url }}" alt="user avatar" width="200" height="200">
+                                    <img src="{{ user.avatar.url }}" alt="user avatar" class="img-responsive img-profile">
                                     <div class="edit"><span class="glyphicon glyphicon-edit glip-action"></span></div>
                                 </a>
 	                        </div>
@@ -27,8 +27,13 @@
                         {{ user.first_name }} {{ user.last_name }}<br/>
                         <span class="glyphicon glyphicon-user"></span> {{ user.username }}<br/>
                         <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ user.rep }}</a><br/>
-                        <a title="Threads"><span class="glyphicon glyphicon-file"></span> {{ user.num_threads }}</a><br/>
+                        <a title="Threads"><span class="glyphicon glyphicon-comment"></span> {{ user.num_threads }}</a><br/>
                         <a title="Posts"><span class="glyphicon glyphicon-pencil"></span> {{ user.posts }}</a><br/>
+                        <a title="User Since"><span class="glyphicon glyphicon-bookmark"></span> <span id="user_since"></span></a><br/>
+                        <a title="Last Seen"><span class="glyphicon glyphicon-time"></span>{% if user.last_login %} <span id="last_seen"></span>
+                        {% else %} Never logged in
+                        {% endif %}
+                        </a><br/>
                     </div>
             </div>
         </div>
@@ -37,7 +42,7 @@
                 <div class="lead">
                     <span class="glyphicon glyphicon-edit glip-action" data-toggle="collapse" data-target=".first-name" aria-expanded="false" aria-controls="first-name" onmouseover=""></span>
                     {% if user.first_name %}
-                        <a href="{% url 'forum:reset_first_name' 'first_name' %}"><span class="glyphicon glyphicon-remove glip-action" onmouseover="" title="clear"></span></a>
+                        <a href="{% url 'forum:reset_first_name' 'first_name' %}"><span class="glyphicon glyphicon-trash glip-action" onmouseover="" title="clear"></span></a>
                         <b>First Name:</b> {{ user.first_name }}
                     {% else %}
                         First Name field is empty
@@ -51,7 +56,7 @@
                     </div><br/>
                     <span class="glyphicon glyphicon-edit glip-action" data-toggle="collapse" data-target=".last-name" aria-expanded="false" aria-controls="last-name" onmouseover=""></span>
                     {% if user.last_name %}
-                        <a href="{% url 'forum:reset_last_name' 'last_name' %}"><span class="glyphicon glyphicon-remove glip-action" onmouseover="" title="clear"></span></a>
+                        <a href="{% url 'forum:reset_last_name' 'last_name' %}"><span class="glyphicon glyphicon-trash glip-action" onmouseover="" title="clear"></span></a>
                         <b>Last Name:</b> {{ user.last_name }}
                     {% else %}
                         Last Name field is empty
@@ -101,4 +106,10 @@
              </div>
         </div>
     </div>
+
+    <script src="{% static 'forum/js/dateScript.js' %}"></script>
+    <script>
+    document.getElementById("user_since").innerHTML = date_fun(new Date({{ user.date_joined|date:'Y, m, d' }}));
+    document.getElementById("last_seen").innerHTML = date_fun(new Date({{ user.last_login|date:'Y, m, d' }}))
+    </script>
 {% endblock %}
