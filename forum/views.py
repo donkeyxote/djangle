@@ -124,7 +124,10 @@ def profile(request, username):
 def del_post(request, post_pk):
     redirect_to = request.GET.get('next', '')
     post = get_object_or_404(Post, pk=post_pk)
-    post.remove()
+    if (request.user is post.author) or (request.user.moderation_set.filter(board=post.thread.board).exists()):
+        post.remove()
+    else:
+        pass
     return HttpResponseRedirect(redirect_to)
 
 
@@ -132,9 +135,12 @@ def del_post(request, post_pk):
 def del_thread(request, thread_pk):
     thread = get_object_or_404(Thread, pk=thread_pk)
     board = thread.board
-    for post in thread.post_set.all():
-        post.remove()
-    return HttpResponseRedirect(reverse('forum:board', kwargs={'board_code': board.code, 'page': ''}))
+    if (request.user is thread.post.author) or(request.user.moderation_set.filter(board=thread.board).exists()):
+        for post in thread.post_set.all():
+            post.remove()
+        return HttpResponseRedirect(reverse('forum:board', kwargs={'board_code': board.code, 'page': ''}))
+    else:
+        pass
 
 
 @login_required
@@ -159,9 +165,9 @@ def edit_profile(request):
                 image = form.cleaned_data['avatar']
                 if image.size > 200 * 1024:
                     return render(request, 'forum/profile_edit.html')
-                type = image.name.rsplit('.', 1)[1]
-                if type in ('jpg', 'jpeg', 'gif', 'png'):
-                    image.name = request.user.username+'.'+type
+                extension = image.name.rsplit('.', 1)[1]
+                if extension in ('jpg', 'jpeg', 'gif', 'png'):
+                    image.name = request.user.username+'.'+extension
                     if not request.user.avatar.name.endswith('Djangle_user_default.png'):
                         img_del = request.user.avatar.path
                         try:

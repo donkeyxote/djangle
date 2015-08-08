@@ -70,6 +70,12 @@ class User(AbstractUser):
             self.avatar = 'prof_pic/Djangle_user_default.png'
             self.save()
 
+    def modded_boards(self):
+        boards = []
+        for mod in self.moderation_set.all():
+            boards.append(mod.board)
+        return boards
+
 
 class Post(models.Model):
     message = models.CharField(max_length=5000)
@@ -228,3 +234,11 @@ class Ban(models.Model):
     duration = models.DurationField('duration')
     banner = models.ForeignKey(User, related_name='banner')
     reason = models.CharField(max_length=50)
+
+
+class Moderation(models.Model):
+    user = models.ForeignKey(User)
+    board = models.ForeignKey(Board)
+
+    class Meta:
+        unique_together = (('user', 'board'),)

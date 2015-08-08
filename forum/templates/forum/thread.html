@@ -29,7 +29,7 @@
                                         <span class="lead">{{ thread.title }}</span>
                                     </div>
                                     <div class="col-sm-3 text-right">
-                                        {% if post.author.username in request.user.username %}
+                                        {% if post.author.username == request.user.username or thread.board in request.user.modded_boards %}
                                             <a href="{% url 'forum:del_thread' thread.pk %}" class="btn btn-default" onclick="return confirm('Are you sure?')" id="delete">Delete Thread</a>
                                         {% endif %}
                                     </div>
@@ -43,15 +43,11 @@
                                     <div>{{ post.message|linebreaksbr }}</div>
                                 </div>
                                 <div class="col-sm-3 text-right">
-                                    {% if post.author.username in request.user.username and post != thread.first_post %}
-                                        <a href="{% url 'forum:del_post' post.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Are you sure?')" id="delete">Delete Post</a>
-                                        <span class="badge" id="pos_badge">
-                                            {{ post.pos_votes }}
-                                        </span>
-                                        <span class="badge" id="neg_badge">
-                                            {{ post.neg_votes }}
-                                        </span>
-                                    {% else %}
+                                    {% if post.author.username in request.user.username or thread.board in request.user.modded_boards %}
+                                        {%if post != thread.first_post %}
+                                            <a href="{% url 'forum:del_post' post.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Are you sure?')" id="delete">Delete Post</a>
+                                        {% endif %}
+                                    {% endif %}
                                     <a href="{% url 'forum:pos_vote' post.pk 'up' %}?next={{ request.get_full_path|urlencode }}#{{ post.pk }}">
                                         <span class="badge" id="pos_badge">
                                             {{ post.pos_votes }}
@@ -62,7 +58,6 @@
                                             {{ post.neg_votes }}
                                         </span>
                                     </a>
-                                    {% endif %}
                                 </div>
                             </div>
                         </div>
