@@ -35,7 +35,7 @@ let the show begin
 
     $ python3 manage.py runserver
     
-## instructions for sending asynchronous mails:
+## instructions for subscriptions' mail service:
 
 **big fat warning:**
 > django database is used as message queue: moving to other message brokers (e.g. redditmq) is highly recommended for
@@ -49,7 +49,8 @@ run a celery worker
 
     $ celery -A djangle worker -l info
 
-start celery beat service
+open another terminal tab in project's root directory and start celery beat service
+(this is only required for asynchronous mails)
 
     $ celery -A djangle beat
 

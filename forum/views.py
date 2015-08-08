@@ -7,6 +7,7 @@ from .models import Board, Thread, Post, Vote, User
 from .forms import PostForm, BoardForm, ThreadForm
 from operator import itemgetter
 from djangle.settings import ELEM_PER_PAGE
+from forum.tasks import sync_mail
 
 # Create your views here.
 
@@ -38,7 +39,8 @@ def thread_view(request, thread_pk, page):
     if request.method == 'POST':
         form = PostForm(request.POST)
         if form.is_valid():
-            Post.create(message=form.cleaned_data['message'], thread=thread, author=request.user)
+            post = Post.create(message=form.cleaned_data['message'], thread=thread, author=request.user)
+            sync_mail.delay(post)
             return HttpResponseRedirect(reverse('forum:thread',
                                                 kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages})+'#bottom')
     else:
@@ -106,8 +108,8 @@ def profile(request, username):
     if user.post_set.exists():
         for post in user.post_set.all():
             votes = post.pos_votes - post.neg_votes
-            if post.pk == post.in_thread.first_post.pk:
-                threads.append((post.in_thread, votes))
+            if post.pk == post.thread.first_post.pk:
+                threads.append((post.thread, votes))
             else:
                 posts.append((post, votes, post.get_page))
         posts.sort(key=itemgetter(1), reverse=True)
@@ -119,7 +121,7 @@ def profile(request, username):
 
 @login_required
 def del_post(request, post_pk):
-    redirect_to = request.REQUEST.get('next', '')
+    redirect_to = request.GET.get('next', '')
     post = get_object_or_404(Post, pk=post_pk)
     post.remove()
     return HttpResponseRedirect(redirect_to)

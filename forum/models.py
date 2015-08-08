@@ -27,7 +27,7 @@ class Board(models.Model):
         latest_posts = sorted(latest_posts, key=attrgetter('pub_date'), reverse=True)
         latest_threads = []
         for post in latest_posts[:num]:
-            latest_threads.append(post.in_thread)
+            latest_threads.append(post.thread)
         return latest_threads
 
     def get_new(self, num=5):
@@ -47,7 +47,7 @@ class User(AbstractUser):
     def num_threads(self):
         count = 0
         for post in self.post_set.all():
-            if post == post.in_thread.first_post:
+            if post == post.thread.first_post:
                 count += 1
         return count
 
@@ -55,7 +55,7 @@ class User(AbstractUser):
 class Post(models.Model):
     message = models.CharField(max_length=5000)
     pub_date = models.DateTimeField('publication date')
-    in_thread = models.ForeignKey('Thread')
+    thread = models.ForeignKey('Thread')
     author = models.ForeignKey(User)
     pos_votes = models.PositiveIntegerField(default=0)
     neg_votes = models.PositiveIntegerField(default=0)
@@ -69,11 +69,11 @@ class Post(models.Model):
     @classmethod
     def create(cls, message, thread, author):
         pub_date = timezone.now()
-        post = cls(message=message, pub_date=pub_date, in_thread=thread, author=author)
+        post = cls(message=message, pub_date=pub_date, thread=thread, author=author)
         post.save()
-        if post.in_thread.first_post is None:
-            post.in_thread.first_post = post
-        post.in_thread.save()
+        if post.thread.first_post is None:
+            post.thread.first_post = post
+        post.thread.save()
         author.posts += 1
         author.save()
         return post
@@ -85,7 +85,7 @@ class Post(models.Model):
         return
 
     def get_page(self):
-        older = self.in_thread.post_set.filter(pub_date__lte=self.pub_date).count()
+        older = self.thread.post_set.filter(pub_date__lte=self.pub_date).count()
         pages = older // ELEM_PER_PAGE
         if older % ELEM_PER_PAGE == 0:
             return pages

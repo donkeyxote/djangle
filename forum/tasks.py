@@ -43,3 +43,21 @@ def mail():
                       [subs[0].user.email],
                       fail_silently=False
                       )
+
+
+@app.task
+def sync_mail(post):
+    subs = (sub for sub in post.thread.subscription_set.filter(async=False, active=True))
+    message = 'New message on thread '+post.thread.title+':'+sep +\
+              'on '+post.pub_date.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT))+' ' +\
+              post.author.username+' wrote :'+os.linesep+post.message
+    for sub in subs:
+        user_message = 'Hi '+sub.user.username+', you have some news from djangle:'+sep+80*'_'+sep+message
+        send_mail(EMAIL_SUBJECT_PREFIX+'update from thread '+sub.thread.title,
+                  user_message,
+                  None,
+                  [sub.user.email],
+                  fail_silently=False
+                  )
+        sub.last_sync=post.pub_date
+        sub.save()

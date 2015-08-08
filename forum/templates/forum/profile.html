@@ -51,7 +51,7 @@
                 </div>
                 <ul class="list-group">
                     {% for post, vote, page in top_posts %}
-                        <a href="{% url 'forum:thread' post.in_thread.pk page %}#{{ post.pk }}">
+                        <a href="{% url 'forum:thread' post.thread.pk page %}#{{ post.pk }}">
                             <li class="list-group-item">
                                 <span class="badge" id="neg_badge">
                                     {{ post.neg_votes }}
