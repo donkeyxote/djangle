@@ -1,9 +1,8 @@
 from django import forms
-from .models import Post, Board, Thread
+from .models import Post, Board, Thread, User
 
 
 class PostForm(forms.ModelForm):
-
 
     class Meta:
         model = Post
@@ -29,3 +28,10 @@ class ThreadForm(forms.ModelForm):
 
         model = Thread
         fields = ['title', 'board', 'tag1', 'tag2', 'tag3']
+
+
+class UserEditForm(forms.ModelForm):
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'avatar']

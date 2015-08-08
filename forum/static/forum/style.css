@@ -78,3 +78,40 @@
     margin: 5px auto;
 }
 
+.glip-action{
+    cursor: pointer;
+    color: #555;
+}
+
+.profile-pic {
+	position: relative;
+	display: inline-block;
+}
+
+.profile-pic:hover{
+    opacity: 0.4;
+}
+
+.profile-pic:hover .edit {
+	display: block;
+}
+
+.edit {
+    opacity: 1;
+	padding-top: 7px;
+	padding-right: 7px;
+	position: absolute;
+	right: 0;
+	top: 0;
+	display: none;
+}
+
+.edit>span {
+	color: #000;
+}
+
+#img-remove{
+    color:#000;
+    text-decoration: none;
+    font-weight: normal;
+}

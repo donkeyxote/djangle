@@ -1,0 +1,104 @@
+{%  extends 'forum/base.html' %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{%  block titlesection %}- {{ user.username }}{%  endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
+{% endblock %}
+{% block body %}
+    {%  if error %}
+        <div class="alert alert-danger">
+            <strong>ERROR:</strong> {{ error }}
+        </div>
+{%  endif %}
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="row">
+                    <div class="col-xs-6 col-sm-12">
+                        	<div class="profile-pic">
+                                <a title="edit" data-toggle="modal" data-target="#change-image">
+                                    <img src="{{ user.avatar.url }}" alt="user avatar" width="200" height="200">
+                                    <div class="edit"><span class="glyphicon glyphicon-edit glip-action"></span></div>
+                                </a>
+	                        </div>
+                        <br/>
+                    </div>
+                    <div class="col-xs-6 col-sm-12 text-right-xs lead" id="user-details">
+                        {{ user.first_name }} {{ user.last_name }}<br/>
+                        <span class="glyphicon glyphicon-user"></span> {{ user.username }}<br/>
+                        <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ user.rep }}</a><br/>
+                        <a title="Threads"><span class="glyphicon glyphicon-file"></span> {{ user.num_threads }}</a><br/>
+                        <a title="Posts"><span class="glyphicon glyphicon-pencil"></span> {{ user.posts }}</a><br/>
+                    </div>
+            </div>
+        </div>
+        <div class="col-sm-8">
+            <form method="post">
+                <div class="lead">
+                    <span class="glyphicon glyphicon-edit glip-action" data-toggle="collapse" data-target=".first-name" aria-expanded="false" aria-controls="first-name" onmouseover=""></span>
+                    {% if user.first_name %}
+                        <a href="{% url 'forum:reset_first_name' 'first_name' %}"><span class="glyphicon glyphicon-remove glip-action" onmouseover="" title="clear"></span></a>
+                        <b>First Name:</b> {{ user.first_name }}
+                    {% else %}
+                        First Name field is empty
+                    {% endif %}
+                    <div class="collapse first-name">
+                        {% csrf_token %}
+                        <table>
+                            {{ form.first_name }}
+                        </table>
+                        <input type="submit" value="Submit" class="btn btn-default" />
+                    </div><br/>
+                    <span class="glyphicon glyphicon-edit glip-action" data-toggle="collapse" data-target=".last-name" aria-expanded="false" aria-controls="last-name" onmouseover=""></span>
+                    {% if user.last_name %}
+                        <a href="{% url 'forum:reset_last_name' 'last_name' %}"><span class="glyphicon glyphicon-remove glip-action" onmouseover="" title="clear"></span></a>
+                        <b>Last Name:</b> {{ user.last_name }}
+                    {% else %}
+                        Last Name field is empty
+                    {% endif %}
+                    <div id="last-name" class="collapse last-name">
+                        {% csrf_token %}
+                        <table>
+                            {{ form.last_name }}
+                        </table>
+                        <input type="submit" value="Submit" class="btn btn-default" />
+                    </div>
+                </div>
+            </form>
+            <div class="row">
+                <div class="col-xs-12 text-right">
+                    <a href="{% url 'forum:profile' user.username %}" ><button class="btn btn-default">Back to profile</button></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="change-image" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+             <div class="modal-content">
+                 <div class="modal-body">
+                     <form enctype="multipart/form-data" method="post">
+                         <div class="row">
+                             <div class="col-xs-12 text-right">
+                                 <button type="button" class="close" data-dismiss="modal"><span class="glyphicon glyphicon-remove glip-action"></span></button>
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-xs-12">
+                                    {% csrf_token %}
+                                    {{ form.avatar }}
+                             </div>
+                         </div>
+                         <div class="row">
+                             <div class="col-xs-12 text-center">
+                                 <input type="submit" value="Submit" class="btn btn-default" />
+                                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                 <a href="{% url 'forum:reset_avatar' 'avatar' %}" type="button" class="btn btn-default" id="img-remove">Remove current</a>
+                             </div>
+                         </div>
+                     </form>
+                 </div>
+             </div>
+        </div>
+    </div>
+{% endblock %}

@@ -15,3 +15,7 @@ config.ini
 
 #Celery
 celerybeat-schedule
+
+#Profile pictures
+djangle/static/djangle/images/prof_pic/*
+!djangle/static/djangle/images/prof_pic/Djangle_user_default.png
