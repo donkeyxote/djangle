@@ -14,7 +14,7 @@ forum/migrations/
 config.ini
 
 #Celery
-celerybeat-schedule
+celerybeat-schedule*
 
 #Profile pictures
 djangle/static/djangle/images/prof_pic/*
