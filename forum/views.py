@@ -1,11 +1,11 @@
-import os
+import os, datetime
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Board, Thread, Post, Vote, User
-from .forms import PostForm, BoardForm, ThreadForm, UserEditForm
+from .models import Board, Thread, Post, Vote, User, Subscription
+from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm
 from operator import itemgetter
 from djangle.settings import ELEM_PER_PAGE
 from forum.tasks import sync_mail
@@ -135,7 +135,7 @@ def del_post(request, post_pk):
 def del_thread(request, thread_pk):
     thread = get_object_or_404(Thread, pk=thread_pk)
     board = thread.board
-    if (request.user is thread.post.author) or(request.user.moderation_set.filter(board=thread.board).exists()):
+    if (request.user is thread.post.author) or request.user.moderation_set.filter(board=thread.board).exists() or request.user.is_supermod():
         for post in thread.post_set.all():
             post.remove()
         return HttpResponseRedirect(reverse('forum:board', kwargs={'board_code': board.code, 'page': ''}))
@@ -196,3 +196,33 @@ def reset_user_field(request, field):
     elif field == 'avatar':
         request.user.reset_avatar()
     return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': request.user.username}))
+
+
+@login_required
+def subscribe(request, thread_pk):
+    thread = get_object_or_404(Thread, pk=thread_pk)
+    if request.method == 'POST':
+        form = SubscribeForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['async']:
+                str_int = form.cleaned_data['interval'].split('.')[0]
+                interval = datetime.timedelta(seconds=int(str_int))
+                sub, created = Subscription.create(thread=thread, user=request.user, async=True, sync_interval=interval)
+                if created:
+                    sub.save()
+            else:
+                sub, created = Subscription.create(thread=thread, user=request.user, async=False)
+                if created:
+                    sub.save()
+        return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
+    else:
+        form = SubscribeForm()
+        return render(request, 'forum/subscribe.html', {'thread': thread.pk, 'form': form})
+
+
+@login_required
+def unsubscribe(request, thread_pk):
+    thread=get_object_or_404(Thread, pk=thread_pk)
+    if Subscription.objects.filter(thread=thread, user=request.user):
+        Subscription.objects.get(thread=thread, user=request.user).delete()
+    return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread_pk, 'page': ''}))

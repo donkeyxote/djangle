@@ -2,10 +2,10 @@ from operator import attrgetter
 import os
 from django.core.validators import RegexValidator
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.utils import timezone
 from xdg.Exceptions import ValidationError
-from djangle.settings import ELEM_PER_PAGE, MEDIA_ROOT
+from djangle.settings import ELEM_PER_PAGE
 
 # Create your models here.
 
@@ -70,11 +70,34 @@ class User(AbstractUser):
             self.avatar = 'prof_pic/Djangle_user_default.png'
             self.save()
 
+    def subscribed_threads(self):
+        threads = []
+        for subscription in self.subscription_set.all():
+            threads.append(subscription.thread)
+        return threads
+
     def modded_boards(self):
         boards = []
         for mod in self.moderation_set.all():
             boards.append(mod.board)
         return boards
+
+    def set_supermod(self, set=True):
+        group = Group.objects.get_or_create(name='supermod')[0]
+        if set:
+            if not self.groups.filter(name='supermod').exists():
+                group.user_set.add(self)
+                self.save()
+        else:
+            if self.groups.filter(name='supermod').exists():
+                self.groups.filter(name='supermod').delete()
+                self.save()
+
+    def is_supermod(self):
+        if self.groups.filter(name='supermod').exists():
+            return True
+        else:
+            return False
 
 
 class Post(models.Model):
@@ -148,6 +171,12 @@ class Thread(models.Model):
         self.delete()
         return
 
+    def sub_users(self):
+        users=[]
+        for sub in self.subscription_set.all():
+            users.append(sub.user)
+        return users
+
 
 class Subscription(models.Model):
     thread = models.ForeignKey(Thread)
@@ -163,6 +192,19 @@ class Subscription(models.Model):
 
     class Meta:
         unique_together = (('thread', 'user'),)
+
+    @classmethod
+    def create(cls, thread, user, async, sync_interval=None, last_sync='default'):
+        if Subscription.objects.filter(thread=thread, user=user).exists():
+            created = False
+            subscr = Subscription.objects.get(thread=thread, user=user)
+        else:
+            now = timezone.now()
+            if last_sync == 'default':
+                last_sync = now
+            subscr = cls(thread=thread, user=user, async=async, sync_interval=sync_interval, last_sync=last_sync)
+            created = True
+        return subscr,created
 
 
 class Vote(models.Model):

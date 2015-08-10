@@ -16,4 +16,6 @@ urlpatterns = [
     url(r'^edit/profile/(?P<field>avatar)', views.reset_user_field, name='reset_avatar'),
     url(r'^delete/post/(?P<post_pk>\d+)/$', views.del_post, name='del_post'),
     url(r'^delete/thread/(?P<thread_pk>\d+)', views.del_thread, name='del_thread'),
+    url(r'^subscribe/(?P<thread_pk>\d+)', views.subscribe, name='subscribe'),
+    url(r'^unsubscribe/(?P<thread_pk>\d+)', views.unsubscribe, name='unsubscribe')
 ]

@@ -1,5 +1,6 @@
 from django import forms
 from .models import Post, Board, Thread, User
+from datetime import timedelta
 
 
 class PostForm(forms.ModelForm):
@@ -35,3 +36,22 @@ class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'avatar']
+
+
+class SubscribeForm(forms.Form):
+    async = forms.BooleanField(label='asynchronous', required=False)
+    int_choices=(
+        (timedelta(minutes=15).total_seconds(), '15 min'),
+        (timedelta(minutes=30).total_seconds(), '30 min'),
+        (timedelta(hours=1).total_seconds(), '1 hour'),
+        (timedelta(hours=3).total_seconds(), '3 hours'),
+        (timedelta(hours=6).total_seconds(), '6 hours'),
+        (timedelta(hours=12).total_seconds(), '12 hours'),
+        (timedelta(days=1).total_seconds(), 'once a day'),
+        (timedelta(weeks=1).total_seconds(), 'once a week'),
+        (timedelta(weeks=4).total_seconds(), 'once every 4 weeks')
+    )
+    interval = forms.ChoiceField(choices=int_choices, required=False)
+
+    class Meta:
+        fields = ['async', 'interval']

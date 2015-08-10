@@ -6,6 +6,15 @@
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
 {% block body %}
+    <div class="row">
+        <div class="col-xs-12 text-right">
+            {% if thread in request.user.subscribed_threads %}
+                <a href="{% url 'forum:unsubscribe' thread.pk %}" class="btn btn-default subscr">Unsubscribe</a>
+            {% else %}
+                 <a href="{% url 'forum:subscribe' thread.pk %}" class="btn btn-default subscr">Subscribe</a>
+            {% endif %}
+        </div>
+    </div>
         {% for post in posts %}
             <div class="row" id="{{ post.pk }}">
                 <div class="col-sm-2">
@@ -29,7 +38,7 @@
                                         <span class="lead">{{ thread.title }}</span>
                                     </div>
                                     <div class="col-sm-3 text-right">
-                                        {% if post.author.username == request.user.username or thread.board in request.user.modded_boards %}
+                                        {% if post.author.username == request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod %}
                                             <a href="{% url 'forum:del_thread' thread.pk %}" class="btn btn-default" onclick="return confirm('Are you sure?')" id="delete">Delete Thread</a>
                                         {% endif %}
                                     </div>
