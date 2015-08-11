@@ -1,7 +1,7 @@
 {%  extends 'forum/base.html' %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
-{%  block titlesection %}- Subscribe thread {{ thread.pk }}{%  endblock %}
+{%  block titlesection %}- Forum - Subscribe {{ thread }}{%  endblock %}
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
@@ -12,7 +12,9 @@
             <table id="board">
                     {{ form|crispy }}
             </table>
-                <input type="submit" value="Subscribe" class="btn btn-default" />
-            </form>
-        </section>
+            <input type="submit" value="Subscribe" class="btn btn-default" />
+            <a href="{% url 'forum:thread' thread.pk none %}" role="button" class="btn btn-default">Cancel</a>
+        </form>
+    </section>
+
 {% endblock %}

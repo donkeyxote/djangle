@@ -1,7 +1,7 @@
 {%  extends 'forum/base.html' %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
-{%  block titlesection %}- {{ thread }}{%  endblock %}
+{%  block titlesection %} - Forum - Create {% if forms|length == 1 %}Board{% else %}Thread{% endif %}{%  endblock %}
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}

@@ -26,6 +26,12 @@ a:visited {
 	text-decoration: none;
 }
 
+a.btn{
+    color:#000;
+    font-weight: normal;
+    text-decoration: none;
+}
+
 .alert>ul{
     list-style: none;
 }
@@ -148,6 +154,7 @@ header {
 .navbar{
     border:0px;
     background-color:#ff9900;
+    height: 50px;
 }
 @media (min-width:768px){
     .navbar{
@@ -158,6 +165,15 @@ header {
 .navbar-djangle, .navbar-nav>li>a{
 	color:#fff;
     text-shadow: 0px 0px 2px #000;
+    height: 50px;
+}
+
+.navbar-nav>li>a:visited{
+    background: #ff9900;
+}
+
+.navbar-nav>li>a:active{
+    background: #ff9900;
 }
 
 .navbar-djangle .navbar-nav>li>a:hover{
@@ -166,15 +182,71 @@ header {
     text-shadow: none;
 }
 
-.navbar-link:link, .navbar-link:visited, .navbar-link:hover, .navbar-brand, .navbar-brand:hover{
+.navbar-link:link, .navbar-link:visited, .navbar-link:hover, .navbar-brand{
     float:left;
     height:50px;
     padding:15px 15px;
     font-size:18px;
-    line-height:20px;
+    line-height:22px;
     color:#fff;
     font-weight: normal;
     text-decoration: none;
+}
+
+.navbar-link:hover, .navbar-brand>a:hover{
+    float:left;
+    height:50px;
+    padding:15px 15px;
+    font-size:18px;
+    line-height:22px;
+    color:#ff9900;
+    background: #fff;
+    text-shadow: none;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+.cog-button{
+    float:left;
+    height:50px;
+    padding:10px 15px 15px;
+    font-size:18px;
+    line-height:22px;
+    color:#fff;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+.cog-button:hover{
+    color:#ff9900;
+    background: #fff;
+    text-shadow: none;
+}
+
+.dropdown-menu{
+    top:0%;
+    z-index:10;
+    min-width:160px;
+    text-align: right;
+    background-color:#ffaa00;
+    -webkit-background-clip:padding-box;
+    background-clip:padding-box;
+    border:0px;
+    border-radius:4px;
+    -webkit-box-shadow:0 6px 12px #c1c1c1;
+    box-shadow:0 6px 12px #c1c1c1;
+    margin-top:50px;
+}
+
+.dropdown-menu>li>a{
+    color: #fff;
+    font-weight: bold;
+}
+
+.dropdown-menu>li>a:hover{
+    background-color: #fff;
+    color: #ff9900;
+    text-shadow: none;
 }
 
 .icon-bar{

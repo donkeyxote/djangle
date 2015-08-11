@@ -51,6 +51,9 @@
                 <a class="navbar-brand">{% block subtitle %}{% endblock %}</a>
             </div>
             <div class="collapse navbar-collapse" id="menuNavbar">
+                <ul class="nav navbar-nav navbar-left">
+                    {% block menuleft %}{% endblock %}
+                </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% block menu %}{% endblock %}
                 </ul>

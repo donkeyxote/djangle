@@ -1,8 +1,20 @@
 {% extends 'base.html'%}
 {% block subtitle %}<a href="{% url 'forum:index' %}" class="navbar-link">Forum</a>{%  endblock %}
 {% block menu %}
-    {% if user.is_authenticated %}
-        <li><a href='{% url 'forum:create_thread' %}' id="menuNavbar">New Thread</a></li>
+    {% block menu_per_page %}{% endblock %}
+    {% if request.user.is_authenticated and request.user.is_supermod or request.user.modded_boards %}
+        <li>
+            <div class="dropdown">
+                <span class=" dropdown-toggle cog-button" type="button" data-toggle="dropdown"><span class="glyphicon glyphicon-cog"></span></span>
+                <ul class="dropdown-menu">
+                    {% if request.user.is_supermod %}
+                        <li><a href="#">Supermod menu items</a></li>
+                    {% else %}
+                        <li><a href="#">Mod menu items</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </li>
     {% endif %}
 {% endblock %}
 

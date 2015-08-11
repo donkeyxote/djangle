@@ -1,7 +1,8 @@
 {%  extends 'forum/base.html' %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
-{%  block titlesection %}- {{ user.username }}{%  endblock %}
+{%  block titlesection %}- Forum - edit {{ user.username }} profile{%  endblock %}
+{% block menu %}{% endblock %}
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
@@ -27,8 +28,8 @@
                         {{ user.first_name }} {{ user.last_name }}<br/>
                         <span class="glyphicon glyphicon-user"></span> {{ user.username }}<br/>
                         <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ user.rep }}</a><br/>
-                        <a title="Threads"><span class="glyphicon glyphicon-comment"></span> {{ user.num_threads }}</a><br/>
-                        <a title="Posts"><span class="glyphicon glyphicon-pencil"></span> {{ user.posts }}</a><br/>
+                        <a title="Threads"><span class="glyphicon glyphicon-pencil"></span> {{ user.num_threads }}</a><br/>
+                        <a title="Posts"><span class="glyphicon glyphicon-comment"></span> {{ user.posts }}</a><br/>
                         <a title="User Since"><span class="glyphicon glyphicon-bookmark"></span> <span id="user_since"></span></a><br/>
                         <a title="Last Seen"><span class="glyphicon glyphicon-time"></span>{% if user.last_login %} <span id="last_seen"></span>
                         {% else %} Never logged in

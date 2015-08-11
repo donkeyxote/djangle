@@ -126,9 +126,11 @@ class Post(models.Model):
         author.save()
         return post
 
-    def remove(self):
+    def remove(self, send_mail=False):
         self.author.posts -= 1
         self.author.save()
+        if send_mail:
+            pass
         self.delete()
         return
 

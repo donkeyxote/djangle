@@ -217,7 +217,7 @@ def subscribe(request, thread_pk):
         return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
     else:
         form = SubscribeForm()
-        return render(request, 'forum/subscribe.html', {'thread': thread.pk, 'form': form})
+        return render(request, 'forum/subscribe.html', {'thread': thread, 'form': form})
 
 
 @login_required

@@ -1,6 +1,11 @@
 {%  extends 'forum/base.html' %}
 {% load staticfiles %}
 {%  block titlesection %}- Forum - {{ board.name }}{%  endblock %}
+{% block menu_per_page %}
+    {% if request.user.is_authenticated %}
+        <li><a href='{% url 'forum:create_thread' %}'>New Thread</a></li>
+    {% endif %}
+{% endblock %}
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
