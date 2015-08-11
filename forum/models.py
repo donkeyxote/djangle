@@ -42,9 +42,9 @@ class Board(models.Model):
 class User(AbstractUser):
 
     def validate_image(fieldfile_obj):
-        filesize = fieldfile_obj.file.size
+        file_size = fieldfile_obj.file.size
         kilobyte_limit = 200
-        if filesize > kilobyte_limit*1024:
+        if file_size > kilobyte_limit*1024:
             raise ValidationError("Max file size is %sKB" % str(kilobyte_limit))
 
     models.EmailField.unique = True
@@ -126,11 +126,9 @@ class Post(models.Model):
         author.save()
         return post
 
-    def remove(self, send_mail=False):
+    def remove(self):
         self.author.posts -= 1
         self.author.save()
-        if send_mail:
-            pass
         self.delete()
         return
 
@@ -174,7 +172,7 @@ class Thread(models.Model):
         return
 
     def sub_users(self):
-        users=[]
+        users = []
         for sub in self.subscription_set.all():
             users.append(sub.user)
         return users
@@ -206,7 +204,7 @@ class Subscription(models.Model):
                 last_sync = now
             subscr = cls(thread=thread, user=user, async=async, sync_interval=sync_interval, last_sync=last_sync)
             created = True
-        return subscr,created
+        return subscr, created
 
 
 class Vote(models.Model):

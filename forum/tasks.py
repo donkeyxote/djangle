@@ -59,5 +59,16 @@ def sync_mail(post):
                   [sub.user.email],
                   fail_silently=False
                   )
-        sub.last_sync=post.pub_date
+        sub.last_sync = post.pub_date
         sub.save()
+
+
+@app.task
+def del_mail(sub=None, mex=None, rec=None):
+    if type(sub) is str and type(mex) is str and type(rec) is str:
+        send_mail(sub,
+                  mex,
+                  None,
+                  [rec],
+                  fail_silently=False
+                  )

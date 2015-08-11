@@ -5,7 +5,7 @@
     {% if request.user.is_authenticated and request.user.is_supermod or request.user.modded_boards %}
         <li>
             <div class="dropdown">
-                <span class=" dropdown-toggle cog-button" type="button" data-toggle="dropdown"><span class="glyphicon glyphicon-cog"></span></span>
+                <span class=" dropdown-toggle cog-button" role="button" data-toggle="dropdown"><span class="glyphicon glyphicon-cog"></span></span>
                 <ul class="dropdown-menu">
                     {% if request.user.is_supermod %}
                         <li><a href="#">Supermod menu items</a></li>
