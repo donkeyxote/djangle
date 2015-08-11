@@ -8,6 +8,7 @@
                 <span class=" dropdown-toggle cog-button" role="button" data-toggle="dropdown"><span class="glyphicon glyphicon-cog"></span></span>
                 <ul class="dropdown-menu">
                     {% if request.user.is_supermod %}
+                        <li><a href="{% url 'forum:create_board' %}">Create board</a></li>
                         <li><a href="#">Supermod menu items</a></li>
                     {% else %}
                         <li><a href="#">Mod menu items</a></li>

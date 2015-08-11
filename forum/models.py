@@ -121,7 +121,7 @@ class Post(models.Model):
         post.save()
         if post.thread.first_post is None:
             post.thread.first_post = post
-        post.thread.save()
+            post.thread.save()
         author.posts += 1
         author.save()
         return post
@@ -177,6 +177,12 @@ class Thread(models.Model):
             users.append(sub.user)
         return users
 
+    def is_closed(self):
+        now = timezone.now()
+        if self.close_date and (self.close_date < now):
+            return True
+        return False
+
 
 class Subscription(models.Model):
     thread = models.ForeignKey(Thread)
@@ -194,7 +200,7 @@ class Subscription(models.Model):
         unique_together = (('thread', 'user'),)
 
     @classmethod
-    def create(cls, thread, user, async, sync_interval=None, last_sync='default'):
+    def create(cls, thread, user, async, sync_interval=None, last_sync='default', active=True):
         if Subscription.objects.filter(thread=thread, user=user).exists():
             created = False
             subscr = Subscription.objects.get(thread=thread, user=user)
@@ -225,49 +231,48 @@ class Vote(models.Model):
             vote.save()
             if value:
                 post.pos_votes += 1
-                post.author.rep += 1
                 post.save()
+                post.author.rep += 1
                 post.author.save()
             else:
                 post.neg_votes += 1
-                post.author.rep -= 1
                 post.save()
+                post.author.rep -= 1
                 post.author.save()
-            return vote
         else:
             if value:
                 if not vote.value:
                     vote.value = value
+                    vote.save()
                     post.pos_votes += 1
                     post.neg_votes -= 1
-                    post.author.rep += 2
-                    vote.save()
                     post.save()
+                    post.author.rep += 2
                     post.author.save()
                 else:
                     post.pos_votes -= 1
-                    post.author.rep -= 1
-                    vote.delete()
                     post.save()
+                    post.author.rep -= 1
                     post.author.save()
+                    vote.delete()
                     return
             else:
                 if vote.value:
                     vote.value = value
+                    vote.save()
                     post.pos_votes -= 1
                     post.neg_votes += 1
-                    post.author.rep -= 2
-                    vote.save()
                     post.save()
+                    post.author.rep -= 2
                     post.author.save()
                 else:
                     post.neg_votes -= 1
-                    post.author.rep += 1
-                    vote.delete()
                     post.save()
+                    post.author.rep += 1
                     post.author.save()
-                    return vote
-        return
+                    vote.delete()
+                    return
+        return vote
 
 
 class Ban(models.Model):

@@ -50,6 +50,10 @@
                         </a>
                     {% endfor %}
                 </ul>
+            {% else %}
+                <div class="well well-sm">
+                    No threads from this user
+                </div>
             {% endif %}
             {% if top_posts %}
                 <div class="well well-sm">
@@ -70,9 +74,11 @@
                         </a>
                     {% endfor %}
                 </ul>
+            {% else %}
+                <div class="well well-sm">
+                No posts from this user
+                </div>
             {% endif %}
-
-
         </div>
     </div>
 

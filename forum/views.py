@@ -11,6 +11,7 @@ from operator import itemgetter
 from djangle.settings import ELEM_PER_PAGE
 from forum.tasks import sync_mail, del_mail
 from djangle.settings import EMAIL_SUBJECT_PREFIX
+from django.utils import timezone
 
 # Create your views here.
 
@@ -218,11 +219,11 @@ def subscribe(request, thread_pk):
             if form.cleaned_data['async']:
                 str_int = form.cleaned_data['interval'].split('.')[0]
                 interval = datetime.timedelta(seconds=int(str_int))
-                sub, created = Subscription.create(thread=thread, user=request.user, async=True, sync_interval=interval)
+                sub, created = Subscription.create(thread=thread, user=request.user, async=True, sync_interval=interval, active=True)
                 if created:
                     sub.save()
             else:
-                sub, created = Subscription.create(thread=thread, user=request.user, async=False)
+                sub, created = Subscription.create(thread=thread, user=request.user, async=False, active=True)
                 if created:
                     sub.save()
         return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
@@ -237,3 +238,27 @@ def unsubscribe(request, thread_pk):
     if Subscription.objects.filter(thread=thread, user=request.user):
         Subscription.objects.get(thread=thread, user=request.user).delete()
     return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread_pk, 'page': ''}))
+
+
+@login_required
+def close_thread(request, thread_pk):
+    thread = get_object_or_404(Thread, pk=thread_pk)
+    if (thread.first_post.author.username == request.user.username or
+            request.user.moderation_set.filter(board=thread.board).exists() or
+            request.user.is_supermod()) and not thread.is_closed():
+        now = timezone.now()
+        thread.close_date = now
+        thread.closer = request.user
+        thread.save()
+    return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
+
+
+@login_required
+def open_thread(request, thread_pk):
+    thread = get_object_or_404(Thread, pk=thread_pk)
+    if thread.closer.username == request.user.username == thread.first_post.author or \
+            request.user.moderation_set.filter(board=thread.board).exists() or \
+            request.user.is_supermod():
+        thread.close_date = None
+        thread.save()
+    return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
