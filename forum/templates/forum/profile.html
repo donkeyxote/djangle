@@ -38,6 +38,11 @@
             </div>
         </div>
         <div class="col-sm-8">
+            {% if request.user.is_supermod %}
+                <div class="text-right">
+                    <a href="{% url 'forum:edit_mod' user.pk %}" role="button" class="btn btn-default usr-button">Manage Mod</a>
+                </div>
+            {% endif %}
             {% if top_threads %}
                 <div class="well well-sm">
                     top threads
