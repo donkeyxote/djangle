@@ -1,6 +1,6 @@
 import os
 import datetime
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,  permission_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
@@ -58,7 +58,7 @@ def thread_view(request, thread_pk, page):
     return render(request, 'forum/thread.html', {'thread': thread, 'posts': post_list, 'form': form})
 
 
-@login_required
+@permission_required('forum.add_board', raise_exception=True)
 def create_board(request):
     if request.method == 'POST':
         form = BoardForm(request.POST)
@@ -67,7 +67,7 @@ def create_board(request):
             return redirect('forum:index')
     else:
         form = BoardForm()
-    return render(request, 'forum/create.html', {'forms': [form]})
+    return render(request, 'forum/create.html', {'forms': [form], 'object': 'board'})
 
 
 @login_required
@@ -99,7 +99,7 @@ def create_thread(request):
     else:
         thread_form = ThreadForm()
         post_form = PostForm()
-    return render(request, 'forum/create.html', {'forms': [thread_form, post_form]})
+    return render(request, 'forum/create.html', {'forms': [thread_form, post_form], 'object': 'thread'})
 
 
 @login_required
@@ -229,7 +229,7 @@ def subscribe(request, thread_pk):
         return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
     else:
         form = SubscribeForm()
-        return render(request, 'forum/subscribe.html', {'thread': thread, 'form': form})
+        return render(request, 'forum/create.html', {'thread': thread, 'forms': [form], 'object': 'subscription'})
 
 
 @login_required

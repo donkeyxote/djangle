@@ -24,10 +24,10 @@
 	                        </div>
                         <br/>
                     </div>
-                    <div class="col-xs-6 col-sm-12 text-right-xs lead" id="user-details">
+                    <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
                         {{ user.first_name }} {{ user.last_name }}<br/>
                         <span class="glyphicon glyphicon-user"></span> {{ user.username }}<br/>
-                        <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ user.rep }}</a><br/>
+                        <a title="Reputation"><span class="glyphicon glyphicon-star"></span> {{ user.rep }}</a><br/>
                         <a title="Threads"><span class="glyphicon glyphicon-pencil"></span> {{ user.num_threads }}</a><br/>
                         <a title="Posts"><span class="glyphicon glyphicon-comment"></span> {{ user.posts }}</a><br/>
                         <a title="User Since"><span class="glyphicon glyphicon-bookmark"></span> <span id="user_since"></span></a><br/>
@@ -35,6 +35,15 @@
                         {% else %} Never logged in
                         {% endif %}
                         </a><br/>
+                        {% if user.is_superuser %}
+                            <span class="glyphicon glyphicon-king"></span> admin<br/>
+                        {% elif user.is_supermod %}
+                            <span class="glyphicon glyphicon-queen"></span> supermoderator<br/>
+                        {% elif user.modded_boards %}
+                            <span class="glyphicon glyphicon-knight"></span> moderator<br/>
+                        {% else %}
+                            <span class="glyphicon glyphicon-pawn"></span> user<br/>
+                        {% endif %}
                     </div>
             </div>
         </div>

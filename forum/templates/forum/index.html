@@ -3,7 +3,7 @@
 {% block titlesection %}- Forum{%  endblock %}
 {% block menu_per_page %}
     {% if request.user.is_authenticated %}
-        <li><a href='{% url 'forum:create_thread' %}'>New Thread</a></li>
+        <li><a href='{% url 'forum:create_thread' %}' class="navbar-link">New Thread</a></li>
     {% endif %}
 {% endblock %}
 {% block head %}
@@ -12,7 +12,22 @@
 {% block body %}
     {%  if boards %}
         {% for board in boards %}
-            <a href="{%  url 'forum:board' board.code none %}" id="board"><div class="well well-sm boards lead">{{ board.name }}</div></a>
+            <a href="{%  url 'forum:board' board.code none %}" id="board">
+                <div class="well well-sm boards lead">
+                    <div class="row">
+                        <div class="col-xs-10">
+                            {{ board.name }}
+                        </div>
+                        <div class="col-xs-2 text-right">
+                            {% if board in request.user.modded_boards%}
+                                <span class="glyphicon glyphicon-knight" title="modded" id="modded"></span>
+                            {% elif request.user.is_supermod %}
+                                <span class="glyphicon glyphicon-knight" title="supermodded" id="modded"></span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
             <div class="row">
                 <div class="col-md-1 hidden-xs"></div>
                 <div class="col-md-11 col-xs-12">

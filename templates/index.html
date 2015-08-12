@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 
-{% block menu %}
-    <li><a href='{% url 'forum:index' %}'>Forum</a></li>
+{% block menuleft %}
+    {% if request.user.is_superuser %}
+        <li><a href="/admin/" class="navbar-link">Admin</a></li>
+    {% endif %}
+    <li><a href='{% url 'forum:index' %}' class="navbar-link">Forum</a></li>
 {% endblock %}
 
 {% block body %}

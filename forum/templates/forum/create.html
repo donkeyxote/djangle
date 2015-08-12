@@ -1,7 +1,7 @@
 {%  extends 'forum/base.html' %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
-{%  block titlesection %} - Forum - Create {% if forms|length == 1 %}Board{% else %}Thread{% endif %}{%  endblock %}
+{%  block titlesection %} - Forum - Create {{ object }}{%  endblock %}
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
@@ -14,7 +14,12 @@
                     {{ form|crispy }}
                 {% endfor %}
             </table>
+                {% if object == 'subscription' %}
+                    <input type="submit" value="Subscribe" class="btn btn-default" />
+                    <a href="{% url 'forum:thread' thread.pk none %}" role="button" class="btn btn-default">Cancel</a>
+                {% else %}
                 <input type="submit" value="Create" class="btn btn-default" />
+                {% endif %}
             </form>
         </section>
 {% endblock %}
