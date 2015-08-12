@@ -5,8 +5,8 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Board, Thread, Post, Vote, User, Subscription
-from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm
+from .models import Board, Thread, Post, Vote, User, Subscription, Moderation
+from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm
 from operator import itemgetter
 from djangle.settings import ELEM_PER_PAGE
 from forum.tasks import sync_mail, del_mail
@@ -262,3 +262,23 @@ def open_thread(request, thread_pk):
         thread.close_date = None
         thread.save()
     return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
+
+
+@login_required
+def manage_mod(request, user_pk):
+    user = get_object_or_404(User, pk=user_pk)
+    if request.user.is_supermod():
+        if request.method == 'POST':
+            form = AddModeratorForm(user, request.POST)
+            if form.is_valid():
+                for board in Board.objects.all():
+                    if form.cleaned_data[board.name] and board not in user.modded_boards():
+                        mod = Moderation(user=user, board=board)
+                        mod.save()
+                    elif board in user.modded_boards() and not form.cleaned_data[board.name]:
+                        mod = get_object_or_404(Moderation, user=user, board=board)
+                        mod.delete()
+                return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
+        else:
+            form = AddModeratorForm(user=user)
+        return render(request, 'forum/create.html', {'forms': [form]})

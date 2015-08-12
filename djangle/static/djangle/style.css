@@ -257,3 +257,7 @@ header {
 #auth:visited, #auth:link {
     color: #ff9900;
 }
+
+.usr-button{
+    margin-bottom: 10px;
+}

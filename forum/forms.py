@@ -40,7 +40,7 @@ class UserEditForm(forms.ModelForm):
 
 class SubscribeForm(forms.Form):
     async = forms.BooleanField(label='asynchronous', required=False)
-    int_choices=(
+    int_choices = (
         (timedelta(minutes=15).total_seconds(), '15 min'),
         (timedelta(minutes=30).total_seconds(), '30 min'),
         (timedelta(hours=1).total_seconds(), '1 hour'),
@@ -55,3 +55,16 @@ class SubscribeForm(forms.Form):
 
     class Meta:
         fields = ['async', 'interval']
+
+
+class AddModeratorForm(forms.Form):
+    boards = []
+    for board in Board.objects.all():
+        boards.append(forms.BooleanField(label=board.name, required=False))
+
+    def __init__(self, user, *args, **kwargs):
+        super(AddModeratorForm, self).__init__(*args, **kwargs)
+        for board in Board.objects.all():
+            value = user.moderation_set.filter(board=board).exists()
+            self.fields['%s' % board.name] = forms.BooleanField(label=board.name, required=False, initial=value)
+
