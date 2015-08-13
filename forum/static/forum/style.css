@@ -5,6 +5,7 @@
 
 #board{
     color:#000;
+    font-weight: normal;
 }
 
 
@@ -127,4 +128,8 @@
 
 #modded{
     padding-right: 15px;
+}
+
+.mod-list-item{
+    margin-bottom: 15px;
 }

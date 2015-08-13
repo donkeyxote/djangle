@@ -84,11 +84,11 @@ class User(AbstractUser):
         return boards
 
     def set_supermod(self, do_set=True):
-        group, created = Group.objects.get_or_create(name='supermod')[0]
+        group, created = Group.objects.get_or_create(name='supermod')
         if created:
-            content_type = ContentType.objects.get(app_label='forum', model='Board')
+            content_type = ContentType.objects.get_or_create(model='board')[0]
             permission1 = Permission.objects.get(codename='add_board', content_type=content_type)
-            content_type = ContentType.objects.get(app_label='forum', model='Moderation')
+            content_type = ContentType.objects.get_or_create(model='moderation')[0]
             permission2 = Permission.objects.get(codename='add_moderation', content_type=content_type)
             permission3 = Permission.objects.get(codename='delete_moderation', content_type=content_type)
             group.permissions.add(permission1, permission2, permission3)
@@ -98,7 +98,7 @@ class User(AbstractUser):
                 self.save()
         else:
             if self.groups.filter(name='supermod').exists():
-                self.groups.filter(name='supermod').delete()
+                group.user_set.remove(self)
                 self.save()
 
     def is_supermod(self):
@@ -158,6 +158,7 @@ class Thread(models.Model):
     tag2 = models.CharField(max_length=50, blank=True, null=True, default=None)
     tag3 = models.CharField(max_length=50, blank=True, null=True, default=None)
     board = models.ForeignKey(Board)
+    sticky = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title[:50]

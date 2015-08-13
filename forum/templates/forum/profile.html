@@ -41,6 +41,9 @@
             {% if request.user.is_supermod %}
                 <div class="text-right">
                     <a href="{% url 'forum:edit_mod' user.pk %}" role="button" class="btn btn-default usr-button">Manage Mod</a>
+                    {% if not user.is_supermod %}
+                        <a href="{% url 'forum:supermod_toggle' user.pk %}" role="button" class="btn btn-default usr-button">Set Supermod</a>
+                    {% endif %}
                 </div>
             {% endif %}
             {% if top_threads %}

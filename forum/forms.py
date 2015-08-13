@@ -68,3 +68,14 @@ class AddModeratorForm(forms.Form):
             value = user.moderation_set.filter(board=board).exists()
             self.fields['%s' % board.name] = forms.BooleanField(label=board.name, required=False, initial=value)
 
+
+class BoardModForm(forms.Form):
+    users = []
+    for user in User.objects.all():
+        users.append(forms.BooleanField(label=user.username, required=False))
+
+    def __init__(self, board, *args, **kwargs):
+        super(BoardModForm, self).__init__(*args, **kwargs)
+        for user in User.objects.all():
+            value = board.moderation_set.filter(user=user).exists()
+            self.fields[user.username] = forms.BooleanField(label=user.username, required=False, initial=value)

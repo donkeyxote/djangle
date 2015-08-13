@@ -8,6 +8,9 @@
         <li><a href='{% url 'forum:create_thread' %}' class="navbar-link">New Thread</a></li>
     {% endif %}
 {% endblock %}
+{% block mod_menu %}
+    <li><a href="{% url 'forum:stick_thread' thread.pk %}">{% if thread.sticky %}Unstick Thread{% else %}Stick Thread{% endif %}</a></li>
+{% endblock %}
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
@@ -33,7 +36,16 @@
                     <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
                         <a href='{% url 'forum:profile' post.author.username %}' title="User"><span class="glyphicon glyphicon-user"></span> {{ post.author }}</a><br/>
                         <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ post.author.rep }}</a><br/>
-                        <a title="Posts"><span class="glyphicon glyphicon-comment"></span> {{ post.author.posts }}</a>
+                        <a title="Posts"><span class="glyphicon glyphicon-comment"></span> {{ post.author.posts }}</a><br/>
+                        {% if post.author.is_superuser %}
+                            <span class="glyphicon glyphicon-king"></span> admin<br/>
+                        {% elif post.author.is_supermod %}
+                            <span class="glyphicon glyphicon-queen"></span> supermod<br/>
+                        {% elif thread.board in post.author.modded_boards %}
+                            <span class="glyphicon glyphicon-knight"></span> moderator<br/>
+                        {% else %}
+                            <span class="glyphicon glyphicon-pawn"></span> user<br/>
+                        {% endif %}
                     </div>
                     </div>
                 </div>
@@ -43,6 +55,9 @@
                             <div class="panel-heading">
                                 <div class="row">
                                     <div class="col-sm-7 col-lg-9">
+                                        {% if thread.board in request.user.modded_boards or request.user.is_supermod %}
+                                            <a href="{% url 'forum:stick_thread' thread.pk %}">{% if thread.sticky %}<span class=" glyphicon glyphicon-pushpin glip-action" title="unstick"></span>{% else %}<span class=" glyphicon glyphicon-pushpin" title="stick" style="color:#aaa"></span>{% endif %}</a>
+                                        {% elif thread.sticky %}<span class=" glyphicon glyphicon-pushpin" title="sticky"></span>{% endif %}
                                         {% if thread.is_closed %}<span class="glyphicon glyphicon-lock" title="closed"></span>{% endif %}
                                         <span class="lead">{{ thread.title }}</span>
                                     </div>
@@ -70,7 +85,7 @@
                                 <div class="col-sm-3 text-right">
                                     {% if post.author.username in request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod %}
                                         {%if post != thread.first_post %}
-                                            <a href="{% url 'forum:del_post' post.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Are you sure?')" id="delete">Delete Post</a>
+                                            <a href="{% url 'forum:del_post' post.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Do you want to delete this post?')" id="delete">Delete Post</a>
                                         {% endif %}
                                     {% endif %}
                                     <a href="{% url 'forum:pos_vote' post.pk 'up' %}?next={{ request.get_full_path|urlencode }}#{{ post.pk }}">
