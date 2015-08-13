@@ -1,7 +1,6 @@
 {%  extends 'forum/base.html' %}
 {% load staticfiles %}
 {%  block titlesection %}- Forum - user {{ user.username }}{%  endblock %}
-{% block menu %}{% endblock %}
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
@@ -12,10 +11,10 @@
                     <div class="col-xs-6 col-sm-12">
                          <img src="{{ user.avatar.url }}" alt="user avatar" class="img-responsive img-profile" >
                     </div>
-                    <div class="col-xs-6 col-sm-12 text-right-xs lead" id="user-details">
+                    <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
                         {{ user.first_name }} {{ user.last_name }}<br/>
                         <span class="glyphicon glyphicon-user"></span> {{ user.username }}<br/>
-                        <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ user.rep }}</a><br/>
+                        <a title="Reputation"><span class="glyphicon glyphicon-star"></span> {{ user.rep }}</a><br/>
                         <a title="Threads"><span class="glyphicon glyphicon-pencil"></span> {{ user.num_threads }}</a><br/>
                         <a title="Posts"><span class="glyphicon glyphicon-comment"></span> {{ user.posts }}</a><br/>
                         <a title="User Since"><span class="glyphicon glyphicon-bookmark"></span> <span id="user_since"></span></a><br/>
@@ -23,20 +22,31 @@
                         {% else %} Never logged in
                         {% endif %}
                         </a><br/>
-                        {% if user.username in request.user.username %}
+                        {% if user.is_superuser %}
+                            <span class="glyphicon glyphicon-king"></span> admin<br/>
+                        {% elif user.is_supermod %}
+                            <span class="glyphicon glyphicon-queen"></span> supermoderator<br/>
+                        {% elif user.modded_boards %}
+                            <span class="glyphicon glyphicon-knight"></span> moderator<br/>
+                        {% else %}
+                            <span class="glyphicon glyphicon-pawn"></span> user<br/>
+                        {% endif %}
+                        {% if user.username == request.user.username %}
                             <a href="{% url 'forum:edit_profile' %}" role="button" class="btn btn-default">Edit profile</a>
                         {% endif %}
-
                     </div>
             </div>
         </div>
         <div class="col-sm-8">
             <div class="text-right">
                 {% if request.user.is_supermod %}
-                        <a href="{% url 'forum:edit_mod' user.pk %}" role="button" class="btn btn-default usr-button">Manage Mod</a>
+                    <a href="{% url 'forum:edit_mod' user.pk %}" role="button" class="btn btn-default usr-button">Manage Mod</a>
+                    {% if request.user.is_superuser and not user.is_supermod %}
+                        <a href="{% url 'forum:supermod_toggle' user.pk %}" role="button" class="btn btn-default usr-button">Set Supermod</a>
+                    {% endif %}
                 {% endif %}
                 {% if request.user.modded_boards  or request.user.is_supermod%}
-                        <a href="{% url 'forum:ban_user' user.pk %}" role="button" class="btn btn-default usr-button">Ban</a>
+                    <a href="{% url 'forum:ban_user' user.pk %}" role="button" class="btn btn-default usr-button">Ban</a>
                     {% if user.is_banned %}
                         <a href="{% url 'forum:unban_user' user.pk %}" role="button" class="btn btn-default usr-button">Unban</a>
                     {% endif %}
@@ -48,22 +58,33 @@
                 </div>
                 <ul class="list-group">
                     {% for thread, vote in top_threads %}
-                        <a href="{% url 'forum:thread' thread.pk ''%}">
-                            <li class="list-group-item">
-                                <span class="badge" id="neg_badge">
-                                    {{ thread.first_post.neg_votes }}
-                                </span>
-                                <span class="badge" id="pos_badge">
-                                    {{ thread.first_post.pos_votes }}
-                                </span>
-                                {{ thread }}
-                            </li>
-                        </a>
+                        <li class="list-group-item">
+                            <a href="{% url 'forum:thread' thread.pk ''%}">
+                                <div class="row">
+                                    <div class="col-xs-8">
+                                        {{ thread }}
+                                    </div>
+                                    <div class="col-xs-4 text-right">
+                                        <span class="badge" id="pos_badge">
+                                            {{ thread.first_post.pos_votes }}
+                                        </span>
+                                        <span class="badge" id="neg_badge">
+                                            {{ thread.first_post.neg_votes }}
+                                        </span>
+                                    </div>
+
+                                </div>
+                            </a>
+                        </li>
                     {% endfor %}
                 </ul>
             {% else %}
                 <div class="well well-sm">
-                    No threads from this user
+                    {% if user.username == request.user.username %}
+                        You haven't written any thread yet
+                    {% else %}
+                        {{ user.username }} hasn't written any thread yet
+                    {% endif %}
                 </div>
             {% endif %}
             {% if top_posts %}
@@ -72,22 +93,33 @@
                 </div>
                 <ul class="list-group">
                     {% for post, vote, page in top_posts %}
-                        <a href="{% url 'forum:thread' post.thread.pk page %}#{{ post.pk }}">
-                            <li class="list-group-item">
-                                <span class="badge" id="neg_badge">
-                                    {{ post.neg_votes }}
-                                </span>
-                                <span class="badge" id="pos_badge">
-                                    {{ post.pos_votes }}
-                                </span>
-                                {{ post }}
-                            </li>
-                        </a>
+                        <li class="list-group-item">
+                            <a href="{% url 'forum:thread' post.thread.pk page %}#{{ post.pk }}">
+                                <div class="row">
+                                    <div class="col-xs-8">
+                                        {{ post }}
+                                    </div>
+                                    <div class="col-xs-4 text-right">
+                                        <span class="badge" id="pos_badge">
+                                            {{ post.pos_votes }}
+                                        </span>
+                                        <span class="badge" id="neg_badge">
+                                            {{ post.neg_votes }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+
                     {% endfor %}
                 </ul>
             {% else %}
                 <div class="well well-sm">
-                No posts from this user
+                    {% if user.username == request.user.username %}
+                        You haven't written any post yet
+                    {% else %}
+                        {{ user.username }} hasn't written any post yet
+                    {% endif %}
                 </div>
             {% endif %}
         </div>

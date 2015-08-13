@@ -5,6 +5,7 @@
 
 #board{
     color:#000;
+    font-weight: normal;
 }
 
 
@@ -123,4 +124,12 @@
     color:#000;
     text-decoration: none;
     font-weight: normal;
+}
+
+#modded{
+    padding-right: 15px;
+}
+
+.mod-list-item{
+    margin-bottom: 15px;
 }

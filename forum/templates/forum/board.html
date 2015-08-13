@@ -3,14 +3,31 @@
 {%  block titlesection %}- Forum - {{ board.name }}{%  endblock %}
 {% block menu_per_page %}
     {% if request.user.is_authenticated %}
-        <li><a href='{% url 'forum:create_thread' %}'>New Thread</a></li>
+        <li><a href='{% url 'forum:create_thread' %}' class="navbar-link">New Thread</a></li>
     {% endif %}
 {% endblock %}
 {% block head %}
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
 {% block body %}
-    <a href="{%  url 'forum:board' board.code none %}" id="board"><div class="well well-sm boards lead">{{ board.name }}</div></a>
+    <a href="{%  url 'forum:board' board.code none %}" id="board">
+        <div class="well well-sm boards lead">
+            <div class="row">
+                <div class="col-xs-10">
+                    {{ board.name }}
+                </div>
+                <div class="col-xs-2 text-right">
+                    {% if board in request.user.modded_boards%}
+                        <span class="glyphicon glyphicon-knight" title="modded" id="modded"></span>
+                    {% elif request.user.is_superuser %}
+                        <span class="glyphicon glyphicon-king" title="supermodded" id="modded"></span>
+                    {% elif request.user.is_supermod %}
+                        <span class="glyphicon glyphicon-queen" title="supermodded" id="modded"></span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </a>
     <div class="row">
         <div class="col-md-1 hidden-xs"></div>
         <div class="col-md-11 col-xs-12">
@@ -27,12 +44,15 @@
                     {% for thread in thread_set %}
                         {% if thread.last_post %}
                             <tr>
-                                <td id="thread">{% if thread.is_closed %}<span class="glyphicon glyphicon-lock" title="closed"></span>{% endif %}
+                                <td id="thread">
+                                    {% if thread.sticky %}<span class=" glyphicon glyphicon-pushpin" title="sticky"></span>{% endif %}
+                                    {% if thread.is_closed %}<span class="glyphicon glyphicon-lock" title="closed"></span>{% endif %}
                                     <a href="{% url 'forum:thread' thread.pk none %}">{{ thread }}</a>
-                                    by <a href='{% url 'forum:profile' thread.first_post.author.username %}'>{{ thread.first_post.author }}</a></td>
+                                    by <a href='{% url 'forum:profile' thread.first_post.author.username %}'>{{ thread.first_post.author }}</a>
+                                </td>
                                 <td id="replies"><script> document.write({{ thread.post_set.all.count }} - 1)</script></td>
                                 <td id="votes"><p id="pos_votes"><span class="glyphicon glyphicon-triangle-top"></span> {{ thread.first_post.pos_votes }}</p><p id="neg_votes"><span class="glyphicon glyphicon-triangle-bottom"></span> {{ thread.first_post.neg_votes }}</p></td>
-                                <td id="last"><a href="#">{{ thread.last_post.pub_date|date:'Y-m-d H:i' }}</a><br/>
+                                <td id="last"><a href="{% url 'forum:thread' thread.pk thread.last_post.get_page %}#{{ thread.last_post.pk }}">{{ thread.last_post.pub_date|date:'Y-m-d H:i' }}</a><br/>
                                     <a href='{% url 'forum:profile' thread.last_post.author.username %}'>{{ thread.last_post.author }}</a></td>
                             </tr>
                         {% endif %}

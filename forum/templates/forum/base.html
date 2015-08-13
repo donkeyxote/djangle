@@ -7,11 +7,17 @@
             <div class="dropdown">
                 <span class=" dropdown-toggle cog-button" role="button" data-toggle="dropdown"><span class="glyphicon glyphicon-cog"></span></span>
                 <ul class="dropdown-menu">
-                    {% if request.user.is_supermod %}
-                        <li><a href="{% url 'forum:create_board' %}">Create board</a></li>
-                        <li><a href="#">Supermod menu items</a></li>
-                    {% else %}
-                        <li><a href="#">Mod menu items</a></li>
+                    {% if request.user.modded_boards or request.user.is_supermod%}
+                        {% block mod_menu %}{% endblock %}
+                        {% if request.user.is_supermod %}
+                            <li><a href="{% url 'forum:create_board' %}">Create board</a></li>
+                            <li><a href="{% url 'forum:moderators' %}">Manage moderators</a></li>
+                            {% block supermod_menu %}{% endblock %}
+                            {% if request.user.is_superuser %}
+                                <li><a href="{% url 'forum:supermods' %}">Manage supermods</a></li>
+                                {% block admin_menu %}{% endblock %}
+                            {% endif %}
+                        {% endif %}
                     {% endif %}
                 </ul>
             </div>

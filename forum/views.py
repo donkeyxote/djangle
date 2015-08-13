@@ -6,11 +6,10 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban
-from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm
+from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm, BoardModForm
 from operator import itemgetter
 from djangle.settings import ELEM_PER_PAGE
 from forum.tasks import sync_mail, del_mail
-
 from django.utils import timezone
 
 # Create your views here.
@@ -25,6 +24,14 @@ def index(request):
 def board_view(request, board_code, page):
     board = get_object_or_404(Board, code=board_code)
     thread_set = board.get_latest()
+    st_threads=[]
+    threads = []
+    for thread in thread_set:
+        if thread.sticky:
+            st_threads.append(thread)
+        else:
+            threads.append(thread)
+    thread_set = st_threads+threads
     paginator = Paginator(thread_set, ELEM_PER_PAGE)
     try:
         thread_set = paginator.page(page)
@@ -59,6 +66,7 @@ def thread_view(request, thread_pk, page):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_supermod())
 def create_board(request):
     if request.method == 'POST':
         form = BoardForm(request.POST)
@@ -67,7 +75,7 @@ def create_board(request):
             return redirect('forum:index')
     else:
         form = BoardForm()
-    return render(request, 'forum/create.html', {'forms': [form]})
+    return render(request, 'forum/create.html', {'forms': [form], 'object': 'board'})
 
 
 @login_required
@@ -99,7 +107,7 @@ def create_thread(request):
     else:
         thread_form = ThreadForm()
         post_form = PostForm()
-    return render(request, 'forum/create.html', {'forms': [thread_form, post_form]})
+    return render(request, 'forum/create.html', {'forms': [thread_form, post_form], 'object': 'thread'})
 
 
 @login_required
@@ -217,7 +225,7 @@ def subscribe(request, thread_pk):
         return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
     else:
         form = SubscribeForm()
-        return render(request, 'forum/subscribe.html', {'thread': thread, 'form': form})
+        return render(request, 'forum/create.html', {'thread': thread, 'forms': [form], 'object': 'subscription'})
 
 
 @login_required
@@ -254,23 +262,22 @@ def open_thread(request, thread_pk):
 
 @login_required
 @user_passes_test(lambda u: u.is_supermod)
-def manage_mod(request, user_pk):
+def manage_user_mod(request, user_pk):
     user = get_object_or_404(User, pk=user_pk)
-    if request.user.is_supermod():
-        if request.method == 'POST':
-            form = AddModeratorForm(user, request.POST)
-            if form.is_valid():
-                for board in Board.objects.all():
-                    if form.cleaned_data[board.name] and board not in user.modded_boards():
-                        mod = Moderation(user=user, board=board)
-                        mod.save()
-                    elif board in user.modded_boards() and not form.cleaned_data[board.name]:
-                        mod = get_object_or_404(Moderation, user=user, board=board)
-                        mod.delete()
-                return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
-        else:
-            form = AddModeratorForm(user=user)
-        return render(request, 'forum/create.html', {'forms': [form]})
+    if request.method == 'POST':
+        form = AddModeratorForm(user, request.POST)
+        if form.is_valid():
+            for board in Board.objects.all():
+                if form.cleaned_data[board.name] and board not in user.modded_boards():
+                    mod = Moderation(user=user, board=board)
+                    mod.save()
+                elif board in user.modded_boards() and not form.cleaned_data[board.name]:
+                    mod = get_object_or_404(Moderation, user=user, board=board)
+                    mod.delete()
+            return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
+    else:
+        form = AddModeratorForm(user=user)
+    return render(request, 'forum/create.html', {'forms': [form]})
 
 
 @login_required
@@ -314,3 +321,75 @@ def unban_user(request, user_pk):
     ban = Ban.objects.filter(user=user).last()
     ban.remove()
     return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def manage_supermods(request):
+    supermods = []
+    for user in User.objects.exclude(username='admin'):
+        if user.is_supermod():
+            supermods.append(user)
+    return render(request, 'forum/supermods.html', {'supermods': supermods})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def supermod_toggle(request, user_pk):
+    user = get_object_or_404(User, pk=user_pk)
+    if user.is_supermod():
+        user.set_supermod(False)
+    else:
+        user.set_supermod(True)
+    return HttpResponseRedirect(reverse('forum:supermods'))
+
+
+@login_required
+def stick_thread(request, thread_pk):
+    thread = get_object_or_404(Thread, pk=thread_pk)
+    if thread.sticky:
+        thread.sticky=False
+        thread.save()
+    else:
+        thread.sticky=True
+        thread.save()
+    return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
+
+
+@login_required
+@user_passes_test(lambda u: u.is_supermod())
+def moderators_view(request):
+    moderators = {}
+    for board in Board.objects.all():
+        moderators[board] = board.moderation_set.all()
+    return render(request, 'forum/moderators.html', {'moderators': moderators})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_supermod())
+def remove_mod(request, user_pk, board_code):
+    user = get_object_or_404(User, pk=user_pk)
+    board = get_object_or_404(Board, code=board_code)
+    mod = get_object_or_404(Moderation, user=user, board=board)
+    mod.delete()
+    return HttpResponseRedirect(reverse('forum:moderators'))
+
+
+@login_required
+@user_passes_test(lambda u: u.is_supermod())
+def manage_board_mod(request, board_code):
+    board = get_object_or_404(Board, code=board_code)
+    if request.method == 'POST':
+        form = BoardModForm(board, request.POST)
+        if form.is_valid():
+            for user in User.objects.all():
+                if form.cleaned_data[user.username] and board not in user.modded_boards():
+                    mod = Moderation(user=user, board=board)
+                    mod.save()
+                elif board in user.modded_boards() and not form.cleaned_data[user.username]:
+                    mod = get_object_or_404(Moderation, user=user, board=board)
+                    mod.delete()
+            return HttpResponseRedirect(reverse('forum:moderators'))
+    else:
+        form = BoardModForm(board=board)
+    return render(request, 'forum/create.html', {'forms': [form], 'object': 'board moderation'})

@@ -1,8 +1,9 @@
 from operator import attrgetter
 import os
+from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.utils import timezone
 from xdg.Exceptions import ValidationError
 from djangle.settings import ELEM_PER_PAGE
@@ -82,19 +83,26 @@ class User(AbstractUser):
             boards.append(mod.board)
         return boards
 
-    def set_supermod(self, set=True):
-        group = Group.objects.get_or_create(name='supermod')[0]
-        if set:
+    def set_supermod(self, do_set=True):
+        group, created = Group.objects.get_or_create(name='supermod')
+        if created:
+            content_type = ContentType.objects.get_or_create(model='board')[0]
+            permission1 = Permission.objects.get(codename='add_board', content_type=content_type)
+            content_type = ContentType.objects.get_or_create(model='moderation')[0]
+            permission2 = Permission.objects.get(codename='add_moderation', content_type=content_type)
+            permission3 = Permission.objects.get(codename='delete_moderation', content_type=content_type)
+            group.permissions.add(permission1, permission2, permission3)
+        if do_set:
             if not self.groups.filter(name='supermod').exists():
                 group.user_set.add(self)
                 self.save()
         else:
             if self.groups.filter(name='supermod').exists():
-                self.groups.filter(name='supermod').delete()
+                group.user_set.remove(self)
                 self.save()
 
     def is_supermod(self):
-        if self.groups.filter(name='supermod').exists():
+        if self.groups.filter(name='supermod').exists() or self.is_superuser:
             return True
         else:
             return False
@@ -162,6 +170,7 @@ class Thread(models.Model):
     tag2 = models.CharField(max_length=50, blank=True, null=True, default=None)
     tag3 = models.CharField(max_length=50, blank=True, null=True, default=None)
     board = models.ForeignKey(Board)
+    sticky = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title[:50]
