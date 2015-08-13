@@ -1,16 +1,16 @@
 import os
 import datetime
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Board, Thread, Post, Vote, User, Subscription, Moderation
-from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm
+from .models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban
+from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm
 from operator import itemgetter
 from djangle.settings import ELEM_PER_PAGE
 from forum.tasks import sync_mail, del_mail
-from djangle.settings import EMAIL_SUBJECT_PREFIX
+
 from django.utils import timezone
 
 # Create your views here.
@@ -125,34 +125,21 @@ def profile(request, username):
 
 @login_required
 def del_post(request, post_pk):
-    redirect_to = request.GET.get('next', '')
     post = get_object_or_404(Post, pk=post_pk)
     if (request.user.username == post.author.username) or\
             request.user.moderation_set.filter(board=post.thread.board).exists() or\
             request.user.is_supermod():
-        sub = EMAIL_SUBJECT_PREFIX+'your post was deleted'
-        mex = 'The post:'+os.linesep+post.message+os.linesep+'in thread: '+post.thread.title+os.linesep+'was deleted'
-        rec = post.author.email
-        del_mail.delay(sub=sub, mex=mex, rec=rec)
-        post.remove()
-    return HttpResponseRedirect(redirect_to)
-
-
-@login_required
-def del_thread(request, thread_pk):
-    thread = get_object_or_404(Thread, pk=thread_pk)
-    board = thread.board
-    if (request.user.username == thread.first_post.author.username) or\
-            request.user.moderation_set.filter(board=thread.board).exists() or\
-            request.user.is_supermod():
-        sub = EMAIL_SUBJECT_PREFIX+'your thread was deleted'
-        mex = 'Thread: '+thread.title+os.linesep+'in board: '+thread.board.name+os.linesep+'was deleted'
-        rec = thread.first_post.author.email
-        del_mail.delay(sub=sub, mex=mex, rec=rec)
-        thread.remove()
-        return HttpResponseRedirect(reverse('forum:board', kwargs={'board_code': board.code, 'page': ''}))
-    else:
-        return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread_pk, 'page': ''}))
+        if post.thread.first_post == post:
+            thread = post.thread
+            del_mail(thread.first_post, thread)
+            thread.remove()
+            return HttpResponseRedirect(reverse('forum:board', kwargs={'board_code': thread.board.code, 'page': ''}))
+        else:
+            redirect_to = request.GET.get('next', '')
+            del_mail(post)
+            post.remove()
+            return HttpResponseRedirect(redirect_to)
+    raise PermissionError
 
 
 @login_required
@@ -219,7 +206,8 @@ def subscribe(request, thread_pk):
             if form.cleaned_data['async']:
                 str_int = form.cleaned_data['interval'].split('.')[0]
                 interval = datetime.timedelta(seconds=int(str_int))
-                sub, created = Subscription.create(thread=thread, user=request.user, async=True, sync_interval=interval, active=True)
+                sub, created = Subscription.create(thread=thread, user=request.user,
+                                                   async=True, sync_interval=interval, active=True)
                 if created:
                     sub.save()
             else:
@@ -265,6 +253,7 @@ def open_thread(request, thread_pk):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_supermod)
 def manage_mod(request, user_pk):
     user = get_object_or_404(User, pk=user_pk)
     if request.user.is_supermod():
@@ -282,3 +271,46 @@ def manage_mod(request, user_pk):
         else:
             form = AddModeratorForm(user=user)
         return render(request, 'forum/create.html', {'forms': [form]})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_mod or u.is_supermod)
+def ban_user(request, user_pk):
+    user = get_object_or_404(User, pk=user_pk)
+    if request.method == 'POST':
+        ban_old = Ban.objects.filter(user=user).last()
+        form = AddBanForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['duration'] is not '':
+                str_int = form.cleaned_data['duration'].split('.')[0]
+                interval = datetime.timedelta(seconds=int(str_int))
+                if ban_old:
+                    if ban_old.duration is None:
+                        interval = None
+                    else:
+                        interval += ban_old.duration
+            else:
+                interval = None
+            ban = Ban(user=user,
+                      start=timezone.now(),
+                      duration=interval,
+                      banner=request.user,
+                      reason=form.cleaned_data['reason'])
+            ban.save()
+            user.is_active = False
+            user.save()
+            if ban_old:
+                ban_old.delete()
+        return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
+    else:
+        form = AddBanForm()
+    return render(request, 'forum/create.html', {'forms': [form]})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_mod or u.is_supermod)
+def unban_user(request, user_pk):
+    user = get_object_or_404(User, pk=user_pk)
+    ban = Ban.objects.filter(user=user).last()
+    ban.remove()
+    return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))

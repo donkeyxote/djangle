@@ -16,9 +16,10 @@ urlpatterns = [
     url(r'^edit/profile/(?P<field>last_name)/$', views.reset_user_field, name='reset_last_name'),
     url(r'^edit/profile/(?P<field>avatar)/$', views.reset_user_field, name='reset_avatar'),
     url(r'^post/(?P<post_pk>\d+)/delete/$', views.del_post, name='del_post'),
-    url(r'^thread/(?P<thread_pk>\d+)/delete/$', views.del_thread, name='del_thread'),
     url(r'^thread/(?P<thread_pk>\d+)/subscribe/$', views.subscribe, name='subscribe'),
     url(r'^thread/(?P<thread_pk>\d+)/unsubscribe/$', views.unsubscribe, name='unsubscribe'),
     url(r'^thread/(?P<thread_pk>\d+)/close/$', views.close_thread, name='close_thread'),
-    url(r'^thread/(?P<thread_pk>\d+)/open/$', views.open_thread, name='open_thread')
+    url(r'^thread/(?P<thread_pk>\d+)/open/$', views.open_thread, name='open_thread'),
+    url(r'^manage/ban/(?P<user_pk>\d+)/$', views.ban_user, name='ban_user'),
+    url(r'^manage/unban/(?P<user_pk>\d+)/$', views.unban_user, name='unban_user'),
 ]

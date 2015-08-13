@@ -145,7 +145,11 @@ BROKER_URL = 'django://'
 
 CELERYBEAT_SCHEDULE = {
     'add-every-30-seconds': {
-        'task': 'forum.tasks.mail',
+        'task': 'forum.tasks.async_mail',
         'schedule': timedelta(seconds=30),
     },
+    'check_ban': {
+        'task': 'forum.tasks.check_ban',
+        'schedule': timedelta(seconds=30)
+    }
 }

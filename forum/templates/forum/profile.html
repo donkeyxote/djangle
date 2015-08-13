@@ -31,11 +31,17 @@
             </div>
         </div>
         <div class="col-sm-8">
-            {% if request.user.is_supermod %}
-                <div class="text-right">
-                    <a href="{% url 'forum:edit_mod' user.pk %}" role="button" class="btn btn-default usr-button">Manage Mod</a>
-                </div>
-            {% endif %}
+            <div class="text-right">
+                {% if request.user.is_supermod %}
+                        <a href="{% url 'forum:edit_mod' user.pk %}" role="button" class="btn btn-default usr-button">Manage Mod</a>
+                {% endif %}
+                {% if request.user.modded_boards  or request.user.is_supermod%}
+                        <a href="{% url 'forum:ban_user' user.pk %}" role="button" class="btn btn-default usr-button">Ban</a>
+                    {% if user.is_banned %}
+                        <a href="{% url 'forum:unban_user' user.pk %}" role="button" class="btn btn-default usr-button">Unban</a>
+                    {% endif %}
+                {% endif %}
+            </div>
             {% if top_threads %}
                 <div class="well well-sm">
                     top threads

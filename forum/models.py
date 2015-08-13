@@ -99,6 +99,18 @@ class User(AbstractUser):
         else:
             return False
 
+    def is_mod(self):
+        if self.moderation_set.all().exists():
+            return True
+        else:
+            return False
+
+    def is_banned(self):
+        for ban in Ban.objects.filter(user=self):
+            if ban.is_active():
+                return True
+        return False
+
 
 class Post(models.Model):
     message = models.CharField(max_length=5000)
@@ -278,9 +290,20 @@ class Vote(models.Model):
 class Ban(models.Model):
     user = models.ForeignKey(User)
     start = models.DateTimeField('start on', default=timezone.now)
-    duration = models.DurationField('duration')
+    duration = models.DurationField('duration', blank=True, null=True, default=None)
     banner = models.ForeignKey(User, related_name='banner')
     reason = models.CharField(max_length=50)
+
+    def is_active(self):
+        if self.duration is None or self.start + self.duration >= timezone.now():
+            return True
+        else:
+            return False
+
+    def remove(self):
+        self.user.is_active = True
+        self.user.save()
+        self.delete()
 
 
 class Moderation(models.Model):

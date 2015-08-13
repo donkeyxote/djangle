@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Post, Thread, Board, Subscription, Moderation
+from .models import User, Post, Thread, Board, Subscription, Moderation, Ban
 # Register your models here.
 
 
@@ -12,3 +12,4 @@ admin.site.register(Thread)
 admin.site.register(Board)
 admin.site.register(Subscription)
 admin.site.register(Moderation)
+admin.site.register(Ban)

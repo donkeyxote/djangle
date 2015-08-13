@@ -1,5 +1,5 @@
 from django import forms
-from .models import Post, Board, Thread, User
+from .models import Post, Board, Thread, User, Ban
 from datetime import timedelta
 
 
@@ -68,3 +68,23 @@ class AddModeratorForm(forms.Form):
             value = user.moderation_set.filter(board=board).exists()
             self.fields['%s' % board.name] = forms.BooleanField(label=board.name, required=False, initial=value)
 
+
+class AddBanForm(forms.ModelForm):
+    ban_choices = (
+        (timedelta(days=1).total_seconds(), 'one day'),
+        (timedelta(days=3).total_seconds(), 'three days'),
+        (timedelta(weeks=1).total_seconds(), 'one week'),
+        (timedelta(weeks=2).total_seconds(), 'two weeks'),
+        (timedelta(weeks=3).total_seconds(), 'three weeks'),
+        (timedelta(weeks=4).total_seconds(), 'one month'),
+        (timedelta(weeks=12).total_seconds(), 'three months'),
+        (timedelta(weeks=24).total_seconds(), 'six months'),
+        (timedelta(weeks=52).total_seconds(), 'one year'),
+        (None, 'permaban'),
+
+    )
+    duration = forms.ChoiceField(choices=ban_choices, required=False)
+
+    class Meta:
+        model = Ban
+        fields = ['duration', 'reason']
