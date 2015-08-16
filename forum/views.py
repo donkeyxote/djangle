@@ -1,17 +1,23 @@
 import os
 import datetime
-from django.contrib.auth.decorators import login_required, user_passes_test
+from operator import itemgetter
+
+from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils import timezone
+
+from .decorators import user_passes_test_with_403
 from .models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban
+from .tasks import sync_mail, del_mail, ban_create_mail, ban_remove_mail
 from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm, \
     BoardModForm
-from operator import itemgetter
+
 from djangle.settings import ELEM_PER_PAGE
-from forum.tasks import sync_mail, del_mail, ban_create_mail, ban_remove_mail
-from django.utils import timezone
+
+
 
 # Create your views here.
 
@@ -66,8 +72,7 @@ def thread_view(request, thread_pk, page):
     return render(request, 'forum/thread.html', {'thread': thread, 'posts': post_list, 'form': form})
 
 
-@login_required
-@user_passes_test(lambda u: u.is_supermod())
+@user_passes_test_with_403(lambda u: u.is_supermod())
 def create_board(request):
     if request.method == 'POST':
         form = BoardForm(request.POST)
@@ -259,8 +264,7 @@ def open_thread(request, thread_pk):
     return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
 
 
-@login_required
-@user_passes_test(lambda u: u.is_supermod)
+@user_passes_test_with_403(lambda u: u.is_supermod)
 def manage_user_mod(request, user_pk):
     user = get_object_or_404(User, pk=user_pk)
     if request.method == 'POST':
@@ -279,8 +283,7 @@ def manage_user_mod(request, user_pk):
     return render(request, 'forum/create.html', {'forms': [form]})
 
 
-@login_required
-@user_passes_test(lambda u: u.is_mod or u.is_supermod)
+@user_passes_test_with_403(lambda u: u.is_mod or u.is_supermod)
 def ban_user(request, user_pk):
     user = get_object_or_404(User, pk=user_pk)
     if request.method == 'POST':
@@ -314,8 +317,7 @@ def ban_user(request, user_pk):
     return render(request, 'forum/create.html', {'forms': [form]})
 
 
-@login_required
-@user_passes_test(lambda u: u.is_mod or u.is_supermod)
+@user_passes_test_with_403(lambda u: u.is_mod or u.is_supermod)
 def unban_user(request, user_pk):
     user = get_object_or_404(User, pk=user_pk)
     ban = Ban.objects.filter(user=user).last()
@@ -324,8 +326,7 @@ def unban_user(request, user_pk):
     return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
 
 
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test_with_403(lambda u: u.is_superuser)
 def manage_supermods(request):
     supermods = []
     for user in User.objects.exclude(username='admin'):
@@ -334,8 +335,7 @@ def manage_supermods(request):
     return render(request, 'forum/supermods.html', {'supermods': supermods})
 
 
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test_with_403(lambda u: u.is_superuser)
 def supermod_toggle(request, user_pk):
     user = get_object_or_404(User, pk=user_pk)
     if user.is_supermod():
@@ -357,8 +357,7 @@ def stick_thread(request, thread_pk):
     return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
 
 
-@login_required
-@user_passes_test(lambda u: u.is_supermod())
+@user_passes_test_with_403(lambda u: u.is_supermod())
 def moderators_view(request):
     moderators = {}
     for board in Board.objects.all():
@@ -366,8 +365,7 @@ def moderators_view(request):
     return render(request, 'forum/moderators.html', {'moderators': moderators})
 
 
-@login_required
-@user_passes_test(lambda u: u.is_supermod())
+@user_passes_test_with_403(lambda u: u.is_supermod())
 def remove_mod(request, user_pk, board_code):
     user = get_object_or_404(User, pk=user_pk)
     board = get_object_or_404(Board, code=board_code)
@@ -376,8 +374,7 @@ def remove_mod(request, user_pk, board_code):
     return HttpResponseRedirect(reverse('forum:moderators'))
 
 
-@login_required
-@user_passes_test(lambda u: u.is_supermod())
+@user_passes_test_with_403(lambda u: u.is_supermod())
 def manage_board_mod(request, board_code):
     board = get_object_or_404(Board, code=board_code)
     if request.method == 'POST':

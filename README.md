@@ -35,7 +35,7 @@ let the show begin
 
     $ python3 manage.py runserver
     
-## instructions for subscriptions' mail service:
+## instructions for mail and self-removal ban services:
 
 **big fat warning:**
 > django database is used as message queue: moving to other message brokers (e.g. redditmq) is highly recommended for
@@ -45,7 +45,7 @@ move to project directory
 
     $ cd /path/to/djangle
 
-run a celery worker
+start a celery worker
 
     $ celery -A djangle worker -l info
 
