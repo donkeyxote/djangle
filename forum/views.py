@@ -6,10 +6,11 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban
-from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm, BoardModForm
+from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm, \
+    BoardModForm
 from operator import itemgetter
 from djangle.settings import ELEM_PER_PAGE
-from forum.tasks import sync_mail, del_mail
+from forum.tasks import sync_mail, del_mail, ban_create_mail, ban_remove_mail
 from django.utils import timezone
 
 # Create your views here.
@@ -24,7 +25,7 @@ def index(request):
 def board_view(request, board_code, page):
     board = get_object_or_404(Board, code=board_code)
     thread_set = board.get_latest()
-    st_threads=[]
+    st_threads = []
     threads = []
     for thread in thread_set:
         if thread.sticky:
@@ -152,6 +153,7 @@ def del_post(request, post_pk):
 
 @login_required
 def edit_profile(request):
+    errors = []
     if request.method == 'POST':
         if not request.FILES:
             form = UserEditForm(request.POST)
@@ -166,12 +168,12 @@ def edit_profile(request):
             form = UserEditForm(request.POST, request.FILES)
             try:
                 check = form.is_valid()
-            except:
+            except KeyError:
                 check = False
+            for error in form._errors.values():
+                    errors.append(error)
             if check and form.cleaned_data['avatar']:
                 image = form.cleaned_data['avatar']
-                if image.size > 200 * 1024:
-                    return render(request, 'forum/profile_edit.html')
                 extension = image.name.rsplit('.', 1)[1]
                 if extension in ('jpg', 'jpeg', 'gif', 'png'):
                     image.name = request.user.username+'.'+extension
@@ -183,13 +185,11 @@ def edit_profile(request):
                             pass
                     request.user.avatar = image
                     request.user.save()
-            else:
-                form = UserEditForm()
-                return render(request, 'forum/profile_edit.html',
-                              {'form': form, 'user': request.user, 'error': 'Form not valid'})
+                else:
+                    errors.append('image must end with .jpg, .jpeg, .gif or .png')
     else:
         form = UserEditForm()
-    return render(request, 'forum/profile_edit.html', {'form': form, 'user': request.user})
+    return render(request, 'forum/profile_edit.html', {'form': form, 'user': request.user, 'error': errors})
 
 
 @login_required
@@ -242,8 +242,7 @@ def close_thread(request, thread_pk):
     if (thread.first_post.author.username == request.user.username or
             request.user.moderation_set.filter(board=thread.board).exists() or
             request.user.is_supermod()) and not thread.is_closed():
-        now = timezone.now()
-        thread.close_date = now
+        thread.close_date = timezone.now()
         thread.closer = request.user
         thread.save()
     return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
@@ -306,6 +305,7 @@ def ban_user(request, user_pk):
             ban.save()
             user.is_active = False
             user.save()
+            ban_create_mail.delay(ban)
             if ban_old:
                 ban_old.delete()
         return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
@@ -320,6 +320,7 @@ def unban_user(request, user_pk):
     user = get_object_or_404(User, pk=user_pk)
     ban = Ban.objects.filter(user=user).last()
     ban.remove()
+    ban_remove_mail.delay(user)
     return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
 
 
@@ -348,10 +349,10 @@ def supermod_toggle(request, user_pk):
 def stick_thread(request, thread_pk):
     thread = get_object_or_404(Thread, pk=thread_pk)
     if thread.sticky:
-        thread.sticky=False
+        thread.sticky = False
         thread.save()
     else:
-        thread.sticky=True
+        thread.sticky = True
         thread.save()
     return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
 

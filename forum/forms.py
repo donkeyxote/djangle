@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from .models import Post, Board, Thread, User, Ban
 from datetime import timedelta
 
@@ -33,9 +34,32 @@ class ThreadForm(forms.ModelForm):
 
 class UserEditForm(forms.ModelForm):
 
+
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'avatar']
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar',None)
+        if avatar: # this is not working, if image field is blank
+            try:
+                if avatar.size:
+                    if avatar:
+                        if avatar.size > 200*1024:
+                            self._errors['avatar'] = 'file too big: max size is 200 kb'
+                            raise ValidationError(self.fields['avatar'].error_messages['file too big: max size is 200 kb'])
+
+                        return avatar
+                    else:
+                        self._errors['avatar'] = "Couldn't read uploaded image"
+                        raise ValidationError("Couldn't read uploaded image")
+                else:
+                    self._errors['avatar'] = "image format not supported"
+                    raise ValidationError("image format not supported")
+            except AttributeError:
+                if avatar != 'prof_pic/Djangle_user_default.png':
+                    self._errors['avatar'] = "image format not supported"
+                    raise ValidationError("image format not supported")
 
 
 class SubscribeForm(forms.Form):
@@ -96,6 +120,6 @@ class BoardModForm(forms.Form):
 
     def __init__(self, board, *args, **kwargs):
         super(BoardModForm, self).__init__(*args, **kwargs)
-        for user in User.objects.all():
+        for user in User.objects.all().order_by('username'):
             value = board.moderation_set.filter(user=user).exists()
             self.fields[user.username] = forms.BooleanField(label=user.username, required=False, initial=value)

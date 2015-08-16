@@ -50,7 +50,8 @@ class User(AbstractUser):
 
     models.EmailField.unique = True
     rep = models.IntegerField(default=0)
-    avatar = models.ImageField(upload_to='prof_pic', default='prof_pic/Djangle_user_default.png', validators=[validate_image])
+    #default='prof_pic/Djangle_user_default.png'
+    avatar = models.ImageField(upload_to='prof_pic',default='prof_pic/Djangle_user_default.png', validators=[validate_image])
     posts = models.PositiveIntegerField(default=0)
     threads = models.PositiveIntegerField(default=0)
 
