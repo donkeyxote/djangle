@@ -118,6 +118,11 @@ a.btn{
     }
 }
 
+
+.httperror{
+    font-size: 63px;
+}
+
 /*=HEADER--------------------------*/
 header {
 	background:#333;

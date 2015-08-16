@@ -21,6 +21,7 @@ class Board(models.Model):
     def create(cls, name, code):
         board = cls(name=name, code=code)
         board.save()
+        return board
 
     def get_latest(self, num=None):
         latest_posts = []
@@ -46,11 +47,13 @@ class User(AbstractUser):
         file_size = fieldfile_obj.file.size
         kilobyte_limit = 200
         if file_size > kilobyte_limit*1024:
-            raise ValidationError("Max file size is %sKB" % str(kilobyte_limit))
+            raise ValidationError("Max file size is %sKB" % str(kilobyte_limit), fieldfile_obj.file)
 
     models.EmailField.unique = True
     rep = models.IntegerField(default=0)
-    avatar = models.ImageField(upload_to='prof_pic', default='prof_pic/Djangle_user_default.png', validators=[validate_image])
+    avatar = models.ImageField(upload_to='prof_pic',
+                               default='prof_pic/Djangle_user_default.png',
+                               validators=[validate_image])
     posts = models.PositiveIntegerField(default=0)
     threads = models.PositiveIntegerField(default=0)
 
@@ -224,12 +227,12 @@ class Subscription(models.Model):
     def create(cls, thread, user, async, sync_interval=None, last_sync='default', active=True):
         if Subscription.objects.filter(thread=thread, user=user).exists():
             created = False
-            subscr = Subscription.objects.get(thread=thread, user=user)
+            subscr = Subscription.objects.get(thread=thread, user=user, active=active)
         else:
             now = timezone.now()
             if last_sync == 'default':
                 last_sync = now
-            subscr = cls(thread=thread, user=user, async=async, sync_interval=sync_interval, last_sync=last_sync)
+            subscr = cls(thread=thread, user=user, async=async, sync_interval=sync_interval, last_sync=last_sync, active=active)
             created = True
         return subscr, created
 
