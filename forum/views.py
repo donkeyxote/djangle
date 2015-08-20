@@ -74,7 +74,10 @@ def create_board(request):
     if request.method == 'POST':
         form = BoardForm(request.POST)
         if form.is_valid():
-            Board.create(name=form.cleaned_data['name'], code=form.cleaned_data['code'])
+            try:
+                Board.create(name=form.cleaned_data['name'], code=form.cleaned_data['code'])
+            except (TypeError, ValueError) as err:
+                return render(request, 'forum/index.html', {'error': str(err)})
             return redirect('forum:index')
     else:
         form = BoardForm()

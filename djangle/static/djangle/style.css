@@ -7,6 +7,7 @@ html{
 
 body{
 	background:#fff;
+    word-wrap: break-word;
 }
 
 a:link{

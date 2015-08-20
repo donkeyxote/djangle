@@ -1,4 +1,4 @@
-.boards{
+.boards, .no-boards{
     background-color: #ffe89c;
     padding-left: 25px;
 }
@@ -7,7 +7,6 @@
     color:#000;
     font-weight: normal;
 }
-
 
 #board:hover, .boards:hover{
     text-decoration: none;

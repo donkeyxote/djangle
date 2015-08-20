@@ -2,7 +2,7 @@
 {% load staticfiles %}
 {% block titlesection %}- Forum{%  endblock %}
 {% block menu_per_page %}
-    {% if request.user.is_authenticated %}
+    {% if request.user.is_authenticated and boards %}
         <li><a href='{% url 'forum:create_thread' %}' class="navbar-link">New Thread</a></li>
     {% endif %}
 {% endblock %}
@@ -10,6 +10,11 @@
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
 {% block body %}
+    {%  if error %}
+        <div class="alert alert-danger">
+            <strong>ERROR:</strong> {{ error }}
+        </div>
+    {%  endif %}
     {%  if boards %}
         {% for board in boards %}
             <a href="{%  url 'forum:board' board.code none %}" id="board">
@@ -65,5 +70,17 @@
                 </div>
             </div>
         {% endfor %}
+    {% else %}
+        {% if request.user.is_supermod %}
+            <a href="{% url 'forum:create_board' %}" id="board" title="Create Board">
+                <div class="well well-sm boards lead">
+                    No board available
+                </div>
+            </a>
+        {% else %}
+            <div class="well well-sm no-boards lead">
+                No board available
+            </div>
+        {% endif %}
     {% endif %}
 {% endblock %}

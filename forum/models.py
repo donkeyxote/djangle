@@ -4,8 +4,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.utils import timezone
-from xdg.Exceptions import ValidationError
+from django.utils import timezone, six
+from django.core.exceptions import ValidationError
 from djangle.settings import ELEM_PER_PAGE
 
 # Create your models here.
@@ -19,12 +19,27 @@ class Board(models.Model):
 
     @classmethod
     def create(cls, name, code):
-        board = cls(name=name, code=code)
-        board.save()
-        return board
+        if not isinstance(name, six.string_types):
+            raise TypeError('name is not a string')
+        if not isinstance(code, six.string_types):
+            raise TypeError('code is not a string')
+        if len(name) > 50:
+            raise ValueError('name too long (max length: 50)')
+        if len(code) > 10:
+            raise ValueError('code too long (max length: 10)')
+        try:
+            alphanumeric.__call__(code)
+        except ValidationError as error:
+            raise error
+        else:
+            board = cls(name=name, code=code)
+            board.save()
+            return board
 
     def get_latest(self, num=None):
         latest_posts = []
+        if (num is not None) and (not isinstance(num, six.integer_types)):
+            num = None
         for thread in self.thread_set.all():
             if thread.last_post() is not None:
                 latest_posts.append(thread.last_post())
@@ -35,6 +50,8 @@ class Board(models.Model):
         return latest_threads
 
     def get_new(self, num=5):
+        if not isinstance(num, six.integer_types):
+            num = 5
         return self.get_latest(num)
 
     def __str__(self):
