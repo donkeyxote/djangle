@@ -9,12 +9,14 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 
-from forum.decorators import user_passes_test_with_403
-from forum.models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban
-from forum.forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm, \
+from .decorators import user_passes_test_with_403
+from .models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban
+from .tasks import sync_mail, del_mail, ban_create_mail, ban_remove_mail
+from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm, \
     BoardModForm
-from forum.tasks import sync_mail, del_mail
+
 from djangle.settings import ELEM_PER_PAGE
+
 
 # Create your views here.
 
@@ -54,8 +56,11 @@ def thread_view(request, thread_pk, page):
     if request.method == 'POST':
         form = PostForm(request.POST)
         if form.is_valid():
-            post = Post.create(message=form.cleaned_data['message'], thread=thread, author=request.user)
-            sync_mail.delay(post)
+            try:
+                post = Post.create(message=form.cleaned_data['message'], thread=thread, author=request.user)
+                sync_mail.delay(post)
+            except (TypeError,ValueError) as err:
+                error = str(err)
             return HttpResponseRedirect(reverse('forum:thread',
                                                 kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages})+'#bottom')
     else:
@@ -98,16 +103,21 @@ def vote_view(request, post_pk, vote):
 @login_required
 def create_thread(request):
     if request.method == 'POST':
+        error = None
         thread_form = ThreadForm(request.POST)
         post_form = PostForm(request.POST)
         if thread_form.is_valid() and post_form.is_valid():
-            thread = Thread.create(title=thread_form.cleaned_data['title'],
-                                   message=post_form.cleaned_data['message'],
-                                   board=thread_form.cleaned_data['board'],
-                                   author=request.user,
-                                   tag1=thread_form.cleaned_data['tag1'],
-                                   tag2=thread_form.cleaned_data['tag2'],
-                                   tag3=thread_form.cleaned_data['tag3'])
+            try:
+                thread = Thread.create(title=thread_form.cleaned_data['title'],
+                                       message=post_form.cleaned_data['message'],
+                                       board=thread_form.cleaned_data['board'],
+                                       author=request.user,
+                                       tag1=thread_form.cleaned_data['tag1'],
+                                       tag2=thread_form.cleaned_data['tag2'],
+                                       tag3=thread_form.cleaned_data['tag3'])
+            except (TypeError, ValueError) as err:
+                error = str(err)
+
             return HttpResponseRedirect(reverse('forum:thread',
                                                 kwargs={'thread_pk': thread.pk, 'page': ''}))
     else:
@@ -158,6 +168,7 @@ def del_post(request, post_pk):
 
 @login_required
 def edit_profile(request):
+    errors = []
     if request.method == 'POST':
         if not request.FILES:
             form = UserEditForm(request.POST)
@@ -172,12 +183,12 @@ def edit_profile(request):
             form = UserEditForm(request.POST, request.FILES)
             try:
                 check = form.is_valid()
-            except:
+            except KeyError:
                 check = False
+            for error in form._errors.values():
+                    errors.append(error)
             if check and form.cleaned_data['avatar']:
                 image = form.cleaned_data['avatar']
-                if image.size > 200 * 1024:
-                    return render(request, 'forum/profile_edit.html')
                 extension = image.name.rsplit('.', 1)[1]
                 if extension in ('jpg', 'jpeg', 'gif', 'png'):
                     image.name = request.user.username+'.'+extension
@@ -189,13 +200,11 @@ def edit_profile(request):
                             pass
                     request.user.avatar = image
                     request.user.save()
-            else:
-                form = UserEditForm()
-                return render(request, 'forum/profile_edit.html',
-                              {'form': form, 'user': request.user, 'error': 'Form not valid'})
+                else:
+                    errors.append('image must end with .jpg, .jpeg, .gif or .png')
     else:
         form = UserEditForm()
-    return render(request, 'forum/profile_edit.html', {'form': form, 'user': request.user})
+    return render(request, 'forum/profile_edit.html', {'form': form, 'user': request.user, 'error': errors})
 
 
 @login_required
@@ -213,21 +222,23 @@ def reset_user_field(request, field):
 
 @login_required
 def subscribe(request, thread_pk):
+    error = None
     thread = get_object_or_404(Thread, pk=thread_pk)
     if request.method == 'POST':
         form = SubscribeForm(request.POST)
         if form.is_valid():
             if form.cleaned_data['async']:
                 str_int = form.cleaned_data['interval'].split('.')[0]
-                interval = datetime.timedelta(seconds=int(str_int))
-                sub, created = Subscription.create(thread=thread, user=request.user,
-                                                   async=True, sync_interval=interval, active=True)
-                if created:
-                    sub.save()
+                sync_interval = datetime.timedelta(seconds=int(str_int))
+                async = True
             else:
-                sub, created = Subscription.create(thread=thread, user=request.user, async=False, active=True)
-                if created:
-                    sub.save()
+                async = False
+                sync_interval = None
+            try:
+                sub = Subscription.create(thread=thread, user=request.user,
+                                          async=async, sync_interval=sync_interval, active=True)
+            except (TypeError, ValueError) as err:
+                error = [str(err)]
         return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
     else:
         form = SubscribeForm()
@@ -248,8 +259,7 @@ def close_thread(request, thread_pk):
     if (thread.first_post.author.username == request.user.username or
             request.user.moderation_set.filter(board=thread.board).exists() or
             request.user.is_supermod()) and not thread.is_closed():
-        now = timezone.now()
-        thread.close_date = now
+        thread.close_date = timezone.now()
         thread.closer = request.user
         thread.save()
     return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
@@ -310,6 +320,7 @@ def ban_user(request, user_pk):
             ban.save()
             user.is_active = False
             user.save()
+            ban_create_mail.delay(ban)
             if ban_old:
                 ban_old.delete()
         return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
@@ -323,6 +334,7 @@ def unban_user(request, user_pk):
     user = get_object_or_404(User, pk=user_pk)
     ban = Ban.objects.filter(user=user).last()
     ban.remove()
+    ban_remove_mail.delay(user)
     return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
 
 

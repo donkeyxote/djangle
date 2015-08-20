@@ -9,7 +9,7 @@
 {% block body %}
     {%  if error %}
         <div class="alert alert-danger">
-            <strong>ERROR:</strong> {{ error }}
+            <strong>ERROR:</strong> {% for err in error %}{{err}}{% endfor %}
         </div>
     {%  endif %}
     <div class="row">

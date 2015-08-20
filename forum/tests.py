@@ -1,4 +1,5 @@
-from operator import attrgetter
+import datetime
+from django.utils import timezone
 from django.utils.http import urlquote
 from django.test import TestCase
 from django.core.urlresolvers import reverse
@@ -37,18 +38,12 @@ class BoardTest(TestCase):
     def test_get_latest_with_threads(self):
         board = Board.create('board name', 'bcode')
         user = User.objects.create(username='pippo', email='pippo@pluto.com')
-        thread_list = [
-            Thread.create(title='thread1', message='1', author=user, board=board),
-            Thread.create(title='thread2', message='2', author=user, board=board),
-            Thread.create(title='thread3', message='3', author=user, board=board),
-            Thread.create(title='thread4', message='4', author=user, board=board),
-            Thread.create(title='thread5', message='5', author=user, board=board),
-            Thread.create(title='thread6', message='6', author=user, board=board),
-            Thread.create(title='thread7', message='7', author=user, board=board),
-            Thread.create(title='thread8', message='8', author=user, board=board),
-            Thread.create(title='thread9', message='9', author=user, board=board),
-            Thread.create(title='thread10', message='10', author=user, board=board),
-        ]
+        pub_date = timezone.now()
+        thread_list = []
+        for i in range(10):
+            thread_list.append(Thread.create(title='thread'+str(i), message=str(i), author=user, board=board))
+            thread_list[i].first_post.pub_date = pub_date-datetime.timedelta(minutes=i)
+            thread_list[i].first_post.save()
         threads1 = board.get_latest()
         threads2 = board.get_latest(5)
         threads3 = board.get_latest('pippo')

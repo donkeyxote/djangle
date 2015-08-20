@@ -1,3 +1,4 @@
+import datetime
 from operator import attrgetter
 import os
 from django.contrib.contenttypes.models import ContentType
@@ -75,11 +76,7 @@ class User(AbstractUser):
     threads = models.PositiveIntegerField(default=0)
 
     def num_threads(self):
-        count = 0
-        for post in self.post_set.all():
-            if post == post.thread.first_post:
-                count += 1
-        return count
+        return Thread.objects.filter(first_post__author=self).count()
 
     def reset_avatar(self):
         if not self.avatar.name.endswith('Djangle_user_default.png'):
@@ -156,9 +153,23 @@ class Post(models.Model):
 
     @classmethod
     def create(cls, message, thread, author):
+        if not (isinstance(message, six.string_types)):
+            raise TypeError("message is not a string instance")
+        if not (isinstance(thread, Thread)):
+            raise TypeError("thread is not a Thread instance")
+        if not (isinstance(author, User)):
+            raise TypeError("author is not an User instance")
+        if not author.is_active:
+            raise ValueError("author is not an active user")
+        if not len(message) <= 5000:
+            raise ValueError("message too long")
+
         pub_date = timezone.now()
-        post = cls(message=message, pub_date=pub_date, thread=thread, author=author)
-        post.save()
+        try:
+            post = cls(message=message, pub_date=pub_date, thread=thread, author=author)
+            post.save()
+        except Exception as e:
+            raise e
         if post.thread.first_post is None:
             post.thread.first_post = post
             post.thread.save()
@@ -200,10 +211,36 @@ class Thread(models.Model):
 
     @classmethod
     def create(cls, title, message, board, author, tag1=None, tag2=None, tag3=None):
+        if not (isinstance(title, six.string_types)):
+            raise TypeError("title is not a string instance")
+        if not len(title) <= 200:
+            raise ValueError("title too long")
+        if not (isinstance(message, six.string_types)):
+            raise TypeError("message is not a string instance")
+        if not len(message) <= 5000:
+            raise ValueError("message too long")
+        if not (isinstance(author, User)):
+            raise TypeError("author is not an User instance")
+        if not (isinstance(board, Board)):
+            raise TypeError("board is not a Board instance")
+        if not (isinstance(author, User)):
+            raise TypeError("author is not an User instance")
+        if not author.is_active:
+            raise ValueError("author is not an active user")
+        for tag in (tag1, tag2, tag3):
+            if not (isinstance(tag, six.string_types)) and not tag == None:
+                raise TypeError("tag is not a string instance")
+            if not tag == None and not len(tag) <= 50:
+                raise ValueError("tag too long")
+
         thread = cls(title=title, board=board, tag1=tag1, tag2=tag2, tag3=tag3)
         thread.save()
-        post = Post.create(message=message, thread=thread, author=author)
-        post.save()
+        try:
+            post = Post.create(message=message, thread=thread, author=author)
+            post.save()
+        except Exception as e:
+            raise e
+
         return thread
 
     def remove(self):
@@ -242,15 +279,33 @@ class Subscription(models.Model):
 
     @classmethod
     def create(cls, thread, user, async, sync_interval=None, last_sync='default', active=True):
+        if not (isinstance(thread, Thread)):
+            raise TypeError("thread is not a Thread instance")
+        if not (isinstance(user, User)):
+            raise TypeError("user is not an User instance")
+        if not user.is_active:
+            raise ValueError("user is not an active user")
+
         if Subscription.objects.filter(thread=thread, user=user).exists():
             created = False
             subscr = Subscription.objects.get(thread=thread, user=user, active=active)
         else:
+            if not (isinstance(async, bool)):
+                raise TypeError("async is not a bool instance")
+            if not (isinstance(sync_interval, datetime.timedelta)) and sync_interval is not None:
+                raise TypeError("sync_interval is not a valid interval instance")
+            if last_sync is not None and not (isinstance(last_sync, datetime.datetime)) and not last_sync == 'default':
+                raise TypeError("last_sync is not a valid datetime instance")
+            if not (isinstance(active, bool)):
+                raise TypeError("active is not a bool instance")
+
             now = timezone.now()
             if last_sync == 'default':
                 last_sync = now
-            subscr = cls(thread=thread, user=user, async=async, sync_interval=sync_interval, last_sync=last_sync, active=active)
+            subscr = cls(thread=thread, user=user, async=async, sync_interval=sync_interval,
+                         last_sync=last_sync, active=active)
             created = True
+            subscr.save()
         return subscr, created
 
 

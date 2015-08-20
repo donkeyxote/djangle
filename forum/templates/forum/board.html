@@ -10,6 +10,11 @@
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
 {% block body %}
+    {%  if error %}
+        <div class="alert alert-danger">
+            <strong>ERROR:</strong> {% for err in error %}{{err}}{% endfor %}
+        </div>
+    {%  endif %}
     <a href="{%  url 'forum:board' board.code none %}" id="board">
         <div class="well well-sm boards lead">
             <div class="row">

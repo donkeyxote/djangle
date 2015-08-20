@@ -15,6 +15,11 @@
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
 {% block body %}
+    {%  if error %}
+        <div class="alert alert-danger">
+            <strong>ERROR:</strong> {% for err in error %}{{err}}{% endfor %}
+        </div>
+    {%  endif %}
     <div class="row">
         <div class="col-xs-12 text-right">
             {% if not thread.is_closed %}

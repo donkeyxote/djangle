@@ -32,11 +32,11 @@ def async_mail():
                         post.author.username+' wrote :'+os.linesep +
                         post.message for post in new_posts)
                 message += sep.join(post)
-                message += sep+80*'_'+sep
+                message += sep+20*'_'+sep
                 sub.last_sync = time
                 sub.save()
         if message is not '':
-            message = 'Hi '+subs[0].user.username+', you have some news from djangle:'+sep+80*'_'+sep+message
+            message = 'Hi '+subs[0].user.username+', you have some news from djangle:'+sep+20*'_'+sep+message
             mail.delay(EMAIL_SUBJECT_PREFIX+'update from your subscriptions',
                       message,
                       None,
@@ -52,7 +52,7 @@ def sync_mail(post):
               'on '+post.pub_date.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT))+' ' +\
               post.author.username+' wrote :'+os.linesep+post.message
     for sub in subs:
-        user_message = 'Hi '+sub.user.username+', you have some news from djangle:'+sep+80*'_'+sep+message
+        user_message = 'Hi '+sub.user.username+', you have some news from djangle:'+sep+20*'_'+sep+message
         mail.delay(EMAIL_SUBJECT_PREFIX+'update from thread '+sub.thread.title,
                   user_message,
                   None,
@@ -74,7 +74,23 @@ def del_mail(post, thread=None):
         message = 'The post:'+os.linesep+post.message+os.linesep+'in thread: '+post.thread.title+os.linesep +\
                   'was deleted'
 
-    mail.delay(subject=subject, message=message, sender=None, reciever=[post.author.email], fail_silently= False)
+    mail.delay(subject=subject, message=message, sender=None, receiver=[post.author.email], fail_silently= False)
+
+@app.task
+def ban_remove_mail(user):
+    subject = 'account enabled'
+    message = 'your ban is expired: you can now log back into djangle'
+    receiver = [user.email]
+    mail.delay(subject=subject, message=message, sender=None, receiver=receiver)
+
+
+@app.task
+def ban_create_mail(ban):
+    subject = 'account disabled'
+    message = 'you have been banned by '+ban.banner.username+' for this reason: '+ban.reason+os.linesep +\
+              'we hope you will take your time to think about your behaviour'
+    mail.delay(subject=subject, message=message, sender=None, receiver=[ban.user.email])
+
 
 
 @app.task
@@ -82,7 +98,8 @@ def check_ban():
     for ban in Ban.objects.all():
         if not ban.is_active():
             ban.remove()
+            ban_remove_mail(ban.user)
 
 @app.task
-def mail(subject, message, sender, reciever, fail_silently= False):
-    send_mail(subject, message, sender, reciever, fail_silently= False)
+def mail(subject, message, sender, receiver, fail_silently= False):
+    send_mail(subject, message, sender, receiver, fail_silently= False)
