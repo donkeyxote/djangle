@@ -1,21 +1,22 @@
 
-# djangle
-### a django jungle forum
+# Djangle
+### a Django jungle forum
 
 ## dependencies and highly recommended packages:
 
 * python 3.4
-* django v1.8
+* Django v1.8
 * pytz
 * pillow
 * dbms and support libraries for python
-* django crispy forms (included in project source)
+* Django crispy forms (included in project source)
 * kombu
 * celery
 
 ## configuration instruction
 
-configure database and email settings by editing file *config.ini* (fields' names are self-explanatory)
+* create an SQL database
+* configure database and email settings by editing file *config.ini* (fields' names are self-explanatory)
 
 ## initialization and run
 
@@ -23,11 +24,15 @@ move to project directory
 
     $ cd /path/to/djangle
     
+make migrations for forum app
+
+    $ python3 manage.py makemigrations forum
+    
 synchronize the database state with the current set of models
 
     $ python3 manage.py migrate
     
-create a superuser for django admin
+create a superuser for Django admin
 
     $ python3 manage.py createsuperuser
 
@@ -38,7 +43,7 @@ let the show begin
 ## instructions for mail and self-removal ban services:
 
 **big fat warning:**
-> django database is used as message queue: moving to other message brokers (e.g. redditmq) is highly recommended for
+> Django database is used as message queue: moving to other message brokers (e.g. redditmq) is highly recommended for
 > production purposes.
 
 move to project directory

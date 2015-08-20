@@ -18,7 +18,6 @@ from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm,
 from djangle.settings import ELEM_PER_PAGE
 
 
-
 # Create your views here.
 
 
@@ -57,8 +56,11 @@ def thread_view(request, thread_pk, page):
     if request.method == 'POST':
         form = PostForm(request.POST)
         if form.is_valid():
-            post = Post.create(message=form.cleaned_data['message'], thread=thread, author=request.user)
-            sync_mail.delay(post)
+            try:
+                post = Post.create(message=form.cleaned_data['message'], thread=thread, author=request.user)
+                sync_mail.delay(post)
+            except (TypeError,ValueError) as err:
+                error = str(err)
             return HttpResponseRedirect(reverse('forum:thread',
                                                 kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages})+'#bottom')
     else:
@@ -98,16 +100,21 @@ def vote_view(request, post_pk, vote):
 @login_required
 def create_thread(request):
     if request.method == 'POST':
+        error = None
         thread_form = ThreadForm(request.POST)
         post_form = PostForm(request.POST)
         if thread_form.is_valid() and post_form.is_valid():
-            thread = Thread.create(title=thread_form.cleaned_data['title'],
-                                   message=post_form.cleaned_data['message'],
-                                   board=thread_form.cleaned_data['board'],
-                                   author=request.user,
-                                   tag1=thread_form.cleaned_data['tag1'],
-                                   tag2=thread_form.cleaned_data['tag2'],
-                                   tag3=thread_form.cleaned_data['tag3'])
+            try:
+                thread = Thread.create(title=thread_form.cleaned_data['title'],
+                                       message=post_form.cleaned_data['message'],
+                                       board=thread_form.cleaned_data['board'],
+                                       author=request.user,
+                                       tag1=thread_form.cleaned_data['tag1'],
+                                       tag2=thread_form.cleaned_data['tag2'],
+                                       tag3=thread_form.cleaned_data['tag3'])
+            except (TypeError, ValueError) as err:
+                error = str(err)
+
             return HttpResponseRedirect(reverse('forum:thread',
                                                 kwargs={'thread_pk': thread.pk, 'page': ''}))
     else:
@@ -212,21 +219,23 @@ def reset_user_field(request, field):
 
 @login_required
 def subscribe(request, thread_pk):
+    error = None
     thread = get_object_or_404(Thread, pk=thread_pk)
     if request.method == 'POST':
         form = SubscribeForm(request.POST)
         if form.is_valid():
             if form.cleaned_data['async']:
                 str_int = form.cleaned_data['interval'].split('.')[0]
-                interval = datetime.timedelta(seconds=int(str_int))
-                sub, created = Subscription.create(thread=thread, user=request.user,
-                                                   async=True, sync_interval=interval, active=True)
-                if created:
-                    sub.save()
+                sync_interval = datetime.timedelta(seconds=int(str_int))
+                async = True
             else:
-                sub, created = Subscription.create(thread=thread, user=request.user, async=False, active=True)
-                if created:
-                    sub.save()
+                async = False
+                sync_interval = None
+            try:
+                sub = Subscription.create(thread=thread, user=request.user,
+                                          async=async, sync_interval=sync_interval, active=True)
+            except (TypeError, ValueError) as err:
+                error = [str(err)]
         return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
     else:
         form = SubscribeForm()
