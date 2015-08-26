@@ -1,3 +1,7 @@
+"""
+module for form views
+"""
+
 import os
 import datetime
 from operator import itemgetter
@@ -5,7 +9,7 @@ from operator import itemgetter
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 
@@ -22,12 +26,32 @@ from djangle.settings import ELEM_PER_PAGE
 
 
 def index(request):
+    """
+    view for forum index
+
+    return a list of recently commented threads grouped by board. you can set maximum number of posts to show
+    for each board in function forum.models.get_new
+
+    :param request: the user's request
+    :return: render the list of threads
+    """
     board_list = Board.objects.all().order_by('name')
     return render(request, 'forum/index.html', {'boards': board_list})
 
 
 @login_required
 def board_view(request, board_code, page):
+    """
+    view for board
+
+    render the threads' list associated with the board. first threads shown are sticky ones, then recently commented
+    follow. if threads' number exceeds ELEM_PER_PAGE (set in djangle.settings) they will be paginated as appropriate.
+
+    :param request: the user's request
+    :param board_code: code of the board
+    :param page: page of threads' list to show
+    :return: render the list of threads in selected page
+    """
     board = get_object_or_404(Board, code=board_code)
     thread_set = board.get_latest()
     st_threads = []
@@ -50,6 +74,18 @@ def board_view(request, board_code, page):
 
 @login_required
 def thread_view(request, thread_pk, page):
+    """
+    view for thread
+
+    render the post's list in selected thread, ordered from older to newer. if posts' number exceeds ELEM_PER_PAGE
+    (set in djangle.settings) they will be paginated as appropriate.
+
+    :param request: the user's request
+    :param thread_pk: primary key of thread
+    :param page: page of posts' list to show
+    :return: render the list of posts in selected page
+    """
+    errors = []
     thread = get_object_or_404(Thread, pk=thread_pk)
     posts = thread.post_set.order_by('pub_date')
     paginator = Paginator(posts, ELEM_PER_PAGE)
@@ -59,8 +95,9 @@ def thread_view(request, thread_pk, page):
             try:
                 post = Post.create(message=form.cleaned_data['message'], thread=thread, author=request.user)
                 sync_mail.delay(post)
-            except (TypeError,ValueError) as err:
-                error = str(err)
+            except (TypeError, ValueError) as error:
+                errors.append(str(error))
+                return render(request, 'errors.html', {'errors': errors})
             return HttpResponseRedirect(reverse('forum:thread',
                                                 kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages})+'#bottom')
     else:
@@ -76,14 +113,24 @@ def thread_view(request, thread_pk, page):
 
 @user_passes_test_with_403(lambda u: u.is_supermod())
 def create_board(request):
+    """
+    view for boards' creation
+
+    display the form for new boards' creation
+
+    :param request: the user's request
+    :return: render form or redirect to new board view if board is created
+    """
+    errors = []
     if request.method == 'POST':
         form = BoardForm(request.POST)
         if form.is_valid():
             try:
-                Board.create(name=form.cleaned_data['name'], code=form.cleaned_data['code'])
-            except (TypeError, ValueError) as err:
-                return render(request, 'forum/index.html', {'error': str(err)})
-            return redirect('forum:index')
+                board = Board.create(name=form.cleaned_data['name'], code=form.cleaned_data['code'])
+            except (TypeError, ValueError) as error:
+                errors.append(str(error))
+                return render(request, 'errors.html', {'errors': errors})
+            return HttpResponseRedirect(reverse('forum:board', kwargs={'board_code': board.code, 'page': ''}))
     else:
         form = BoardForm()
     return render(request, 'forum/create.html', {'forms': [form], 'object': 'board'})
@@ -91,6 +138,15 @@ def create_board(request):
 
 @login_required
 def vote_view(request, post_pk, vote):
+    """
+    view for voting post
+
+    a simple interface for templates to function forum.models.Vote.vote
+    :param request: the user's request
+    :param post_pk: primary key of post to vote
+    :param vote: vote value. use "up" for positive vote, "down" for negative
+    :return: redirect to updated post.
+    """
     redirect_to = request.REQUEST.get('next', '')
     post = get_object_or_404(Post, pk=post_pk)
     if vote == 'up':
@@ -102,8 +158,15 @@ def vote_view(request, post_pk, vote):
 
 @login_required
 def create_thread(request):
+    """
+    view for threads' creation
+
+    display the form for new threads' creation
+    :param request: the user's request
+    :return: render form or redirect to new thread if thread is created
+    """
+    errors = []
     if request.method == 'POST':
-        error = None
         thread_form = ThreadForm(request.POST)
         post_form = PostForm(request.POST)
         if thread_form.is_valid() and post_form.is_valid():
@@ -115,8 +178,9 @@ def create_thread(request):
                                        tag1=thread_form.cleaned_data['tag1'],
                                        tag2=thread_form.cleaned_data['tag2'],
                                        tag3=thread_form.cleaned_data['tag3'])
-            except (TypeError, ValueError) as err:
-                error = str(err)
+            except (TypeError, ValueError) as error:
+                errors.append(str(error))
+                return render(request, 'errors.html', {'errors': errors})
 
             return HttpResponseRedirect(reverse('forum:thread',
                                                 kwargs={'thread_pk': thread.pk, 'page': ''}))
@@ -128,6 +192,15 @@ def create_thread(request):
 
 @login_required
 def profile(request, username):
+    """
+    view for user's info
+
+    render information about selected user like: first and last name (only if set), post and thread number, reputation,
+    top threads, top posts, avatar, join date, last login, role
+    :param request: the user's request
+    :param username: username of the user to show
+    :return: render user's profile info
+    """
     user = get_object_or_404(User, username=username)
     threads = []
     top_threads = []
@@ -149,6 +222,14 @@ def profile(request, username):
 
 @login_required
 def del_post(request, post_pk):
+    """
+    view for deleting posts or threads
+
+    delete post or thread of you are author, moderator or supermoderator and send mail to author.
+    :param request: the user's request
+    :param post_pk: primary key of post (or first_post if deleting thread)
+    :return: render to thread on current page (or first page of board if deleting thread)
+    """
     post = get_object_or_404(Post, pk=post_pk)
     if (request.user.username == post.author.username) or\
             request.user.moderation_set.filter(board=post.thread.board).exists() or\
@@ -168,6 +249,13 @@ def del_post(request, post_pk):
 
 @login_required
 def edit_profile(request):
+    """
+    view for change user's info
+
+    change some user's info like: first and last name, avatar.
+    :param request: the user's request
+    :return: render info's updating page
+    """
     errors = []
     if request.method == 'POST':
         if not request.FILES:
@@ -196,8 +284,9 @@ def edit_profile(request):
                         img_del = request.user.avatar.path
                         try:
                             os.remove(img_del)
-                        except:
-                            pass
+                        except Exception as error:
+                            errors.append(str(error))
+                            return render(request, 'errors.html', {'errors': errors})
                     request.user.avatar = image
                     request.user.save()
                 else:
@@ -209,6 +298,15 @@ def edit_profile(request):
 
 @login_required
 def reset_user_field(request, field):
+    """
+    view for clearing fields
+
+    interface for templates to clear user's editable fields
+    :param request: the user's request
+    :param field: name of field to clear. use "first_name" for first name, "last_name" for last name and "avatar"
+    for profile picture
+    :return: redirect to profile edit view
+    """
     if field == 'first_name':
         request.user.first_name = ''
         request.user.save()
@@ -217,12 +315,20 @@ def reset_user_field(request, field):
         request.user.save()
     elif field == 'avatar':
         request.user.reset_avatar()
-    return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': request.user.username}))
+    return render(request, 'forum/profile_edit.html')
 
 
 @login_required
 def subscribe(request, thread_pk):
-    error = None
+    """
+    view for creating subscriptions
+
+    render form for subscriptions' creation
+    :param request: the user's request
+    :param thread_pk: primary key of thread to subscribe
+    :return: render form for subscriptions' creation or redirect to thread if subscription is created
+    """
+    errors = []
     thread = get_object_or_404(Thread, pk=thread_pk)
     if request.method == 'POST':
         form = SubscribeForm(request.POST)
@@ -235,10 +341,11 @@ def subscribe(request, thread_pk):
                 async = False
                 sync_interval = None
             try:
-                sub = Subscription.create(thread=thread, user=request.user,
-                                          async=async, sync_interval=sync_interval, active=True)
-            except (TypeError, ValueError) as err:
-                error = [str(err)]
+                Subscription.create(thread=thread, user=request.user,
+                                    async=async, sync_interval=sync_interval, active=True)
+            except (TypeError, ValueError) as error:
+                errors.append(str(error))
+                return render(request, 'errors.html', {'errors': errors})
         return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
     else:
         form = SubscribeForm()
@@ -247,6 +354,14 @@ def subscribe(request, thread_pk):
 
 @login_required
 def unsubscribe(request, thread_pk):
+    """
+    view for subscription deletion
+
+    delete user's subscription to thread
+    :param request: the user's request
+    :param thread_pk: primary key of thread to unsubscribe
+    :return: redirect to selected thread
+    """
     thread = get_object_or_404(Thread, pk=thread_pk)
     if Subscription.objects.filter(thread=thread, user=request.user):
         Subscription.objects.get(thread=thread, user=request.user).delete()
@@ -254,30 +369,38 @@ def unsubscribe(request, thread_pk):
 
 
 @login_required
-def close_thread(request, thread_pk):
+def toggle_close_thread(request, thread_pk):
+    """
+    view for closing/opening threads
+
+    mark thread as closed/open if user is author, moderator or supermoderator and disable new posts
+    :param request: the user's request
+    :param thread_pk: primary key of thread to close
+    :return: redirect to thread view
+    """
     thread = get_object_or_404(Thread, pk=thread_pk)
     if (thread.first_post.author.username == request.user.username or
             request.user.moderation_set.filter(board=thread.board).exists() or
-            request.user.is_supermod()) and not thread.is_closed():
-        thread.close_date = timezone.now()
-        thread.closer = request.user
-        thread.save()
-    return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
-
-
-@login_required
-def open_thread(request, thread_pk):
-    thread = get_object_or_404(Thread, pk=thread_pk)
-    if thread.closer.username == request.user.username == thread.first_post.author or \
-            request.user.moderation_set.filter(board=thread.board).exists() or \
-            request.user.is_supermod():
-        thread.close_date = None
+            request.user.is_supermod()):
+        if thread.is_closed():
+            thread.close_date = None
+        else:
+            thread.close_date = timezone.now()
+            thread.closer = request.user
         thread.save()
     return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': thread.pk, 'page': ''}))
 
 
 @user_passes_test_with_403(lambda u: u.is_supermod)
 def manage_user_mod(request, user_pk):
+    """
+    view for managing moderation for user
+
+    display form for selecting which boards user can moderate
+    :param request: the user's request
+    :param user_pk: primary key of user to manage
+    :return: render form for moderation management or redirect to target user's profile if management is over
+    """
     user = get_object_or_404(User, pk=user_pk)
     if request.method == 'POST':
         form = AddModeratorForm(user, request.POST)
@@ -297,6 +420,15 @@ def manage_user_mod(request, user_pk):
 
 @user_passes_test_with_403(lambda u: u.is_mod or u.is_supermod)
 def ban_user(request, user_pk):
+    """
+    view for banning users
+
+    ban an user and send a mail as notification. if user is banned already, the selected duration will be added to
+    previous one
+    :param request: the user's request
+    :param user_pk: primary key of user to ban
+    :return: render ban form or redirect to target user's profile if ban is created
+    """
     user = get_object_or_404(User, pk=user_pk)
     if request.method == 'POST':
         ban_old = Ban.objects.filter(user=user).last()
@@ -331,6 +463,14 @@ def ban_user(request, user_pk):
 
 @user_passes_test_with_403(lambda u: u.is_mod or u.is_supermod)
 def unban_user(request, user_pk):
+    """
+    view for removing ban
+
+    remove ban for selected user and send notification mail
+    :param request: the user's request
+    :param user_pk: primary key of user to redeem
+    :return: redirect to target user's profile
+    """
     user = get_object_or_404(User, pk=user_pk)
     ban = Ban.objects.filter(user=user).last()
     ban.remove()
@@ -340,6 +480,13 @@ def unban_user(request, user_pk):
 
 @user_passes_test_with_403(lambda u: u.is_superuser)
 def manage_supermods(request):
+    """
+    view for supermoderator overview
+
+    show supermoderators' list
+    :param request: the user's request
+    :return: render supermoderators' list
+    """
     supermods = []
     for user in User.objects.exclude(username='admin'):
         if user.is_supermod():
@@ -349,6 +496,14 @@ def manage_supermods(request):
 
 @user_passes_test_with_403(lambda u: u.is_superuser)
 def supermod_toggle(request, user_pk):
+    """
+    view for supermoderators management
+
+    set if user is supermoderator
+    :param request: the user's request
+    :param user_pk: primary key of user to toggle
+    :return: redirect to supermoderators view
+    """
     user = get_object_or_404(User, pk=user_pk)
     if user.is_supermod():
         user.set_supermod(False)
@@ -359,6 +514,14 @@ def supermod_toggle(request, user_pk):
 
 @login_required
 def stick_thread(request, thread_pk):
+    """
+    view to stick thread
+
+    set if thread is sticky (to keep it on top of thread list in board)
+    :param request: the user's request
+    :param thread_pk: primary key of thread to stick
+    :return: redirect to thread's view
+    """
     thread = get_object_or_404(Thread, pk=thread_pk)
     if thread.sticky:
         thread.sticky = False
@@ -371,6 +534,13 @@ def stick_thread(request, thread_pk):
 
 @user_passes_test_with_403(lambda u: u.is_supermod())
 def moderators_view(request):
+    """
+    view for moderations' overview
+
+    show a list of board in which each element has a list of moderators
+    :param request: the user's request
+    :return: render the list of moderators for each board
+    """
     moderators = {}
     for board in Board.objects.all():
         moderators[board] = board.moderation_set.all()
@@ -379,6 +549,15 @@ def moderators_view(request):
 
 @user_passes_test_with_403(lambda u: u.is_supermod())
 def remove_mod(request, user_pk, board_code):
+    """
+    view for removing moderators from a board
+
+    remove moderator from selected board and redirect to moderations' overview
+    :param request: the user's request
+    :param user_pk: primary key of user to remove from moderators
+    :param board_code: code of board from which remove moderation
+    :return: redirect to moderations' overview
+    """
     user = get_object_or_404(User, pk=user_pk)
     board = get_object_or_404(Board, code=board_code)
     mod = get_object_or_404(Moderation, user=user, board=board)
@@ -388,6 +567,15 @@ def remove_mod(request, user_pk, board_code):
 
 @user_passes_test_with_403(lambda u: u.is_supermod())
 def manage_board_mod(request, board_code):
+    """
+    view for managing board's moderators
+
+    show form to update the list of moderator in a board. all users will be shown and selected ones will be moderators
+    after post
+    :param request: the user's request
+    :param board_code: code of board to manage
+    :return: render moderations' overview
+    """
     board = get_object_or_404(Board, code=board_code)
     if request.method == 'POST':
         form = BoardModForm(board, request.POST)

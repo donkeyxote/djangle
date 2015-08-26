@@ -1,3 +1,7 @@
+"""
+module for forum's forms
+"""
+
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import Post, Board, Thread, User, Ban
@@ -5,6 +9,9 @@ from datetime import timedelta
 
 
 class PostForm(forms.ModelForm):
+    """
+    form for post creation
+    """
 
     class Meta:
         model = Post
@@ -15,6 +22,9 @@ class PostForm(forms.ModelForm):
 
 
 class BoardForm(forms.ModelForm):
+    """
+    form for board creation
+    """
 
     class Meta:
         model = Board
@@ -22,6 +32,9 @@ class BoardForm(forms.ModelForm):
 
 
 class ThreadForm(forms.ModelForm):
+    """
+    form for thread creation
+    """
 
     board = forms.ModelChoiceField(queryset=Board.objects.order_by('name'))
     post = PostForm()
@@ -33,14 +46,16 @@ class ThreadForm(forms.ModelForm):
 
 
 class UserEditForm(forms.ModelForm):
-
+    """
+    form for user's field modification
+    """
 
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'avatar']
 
     def clean_avatar(self):
-        avatar = self.cleaned_data.get('avatar',None)
+        avatar = self.cleaned_data.get('avatar', None)
         if avatar: # this is not working, if image field is blank
             try:
                 if avatar.size:
@@ -63,6 +78,9 @@ class UserEditForm(forms.ModelForm):
 
 
 class SubscribeForm(forms.Form):
+    """
+    form for subscription creation
+    """
     async = forms.BooleanField(label='asynchronous', required=False)
     int_choices = (
         (timedelta(minutes=15).total_seconds(), '15 min'),
@@ -82,6 +100,9 @@ class SubscribeForm(forms.Form):
 
 
 class AddModeratorForm(forms.Form):
+    """
+    form for managing user's moderations
+    """
     boards = []
     for board in Board.objects.all():
         boards.append(forms.BooleanField(label=board.name, required=False))
@@ -94,6 +115,9 @@ class AddModeratorForm(forms.Form):
 
 
 class AddBanForm(forms.ModelForm):
+    """
+    form for adding a new ban
+    """
     ban_choices = (
         (timedelta(days=1).total_seconds(), 'one day'),
         (timedelta(days=3).total_seconds(), 'three days'),
@@ -113,7 +137,11 @@ class AddBanForm(forms.ModelForm):
         model = Ban
         fields = ['duration', 'reason']
 
+
 class BoardModForm(forms.Form):
+    """
+    form for adding a new board
+    """
     users = []
     for user in User.objects.all():
         users.append(forms.BooleanField(label=user.username, required=False))

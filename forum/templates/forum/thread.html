@@ -15,9 +15,9 @@
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
 {% block body %}
-    {%  if error %}
+    {%  if errors %}
         <div class="alert alert-danger">
-            <strong>ERROR:</strong> {% for err in error %}{{err}}{% endfor %}
+            <strong>ERROR:</strong> {% for error in errors %}{{error}}{% endfor %}
         </div>
     {%  endif %}
     <div class="row">
@@ -70,10 +70,10 @@
                                         {% if post.author.username == request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod %}
                                             {% if thread.is_closed %}
                                                 {% if thread.closer.username == request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod%}
-                                                    <a href="{% url 'forum:open_thread' thread.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to re-open this thread?')">Open</a>
+                                                    <a href="{% url 'forum:toggle_close_thread' thread.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to re-open this thread?')">Open</a>
                                                 {% endif %}
                                             {% else %}
-                                                <a href="{% url 'forum:close_thread' thread.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to close this thread?')">Close</a>
+                                                <a href="{% url 'forum:toggle_close_thread' thread.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to close this thread?')">Close</a>
                                             {% endif %}
                                             <a href="{% url 'forum:del_post' thread.first_post.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to delete this thread?')">Delete Thread</a>
                                         {% endif %}

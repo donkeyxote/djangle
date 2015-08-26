@@ -20,7 +20,7 @@ class BoardTest(TestCase):
 
     def test_creation_with_invalid_name(self):
         self.assertRaises(ValueError, Board.create, name='board name too long for this model really too too long', code='bcode')
-        self.assertRaises(TypeError, Board.create, name= None, code= 'bcode')
+        self.assertRaises(TypeError, Board.create, name=None, code='bcode')
 
     def test_creation_with_invalid_code(self):
         self.assertRaises(ValidationError, Board.create, name='board name', code='bcod&')

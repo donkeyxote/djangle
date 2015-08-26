@@ -15,11 +15,22 @@ alphanumeric = RegexValidator(r'^\w*$', 'Only alphanumeric characters are allowe
 
 
 class Board(models.Model):
+    """
+    list of thread
+
+    a board is a container of threads. it is usually meant to group threads by category.
+    """
     name = models.CharField(max_length=50, unique=True)
     code = models.CharField(max_length=10, unique=True, validators=[alphanumeric])
 
     @classmethod
     def create(cls, name, code):
+        """
+        method for board creation
+        :param name: name for the new board
+        :param code: code for the new board
+        :return: the new board
+        """
         if not isinstance(name, six.string_types):
             raise TypeError('name is not a string')
         if not isinstance(code, six.string_types):
@@ -38,6 +49,11 @@ class Board(models.Model):
             return board
 
     def get_latest(self, num=None):
+        """
+        get board's thread ordered by last comment publish date
+        :param num: number of threads to return (optional: default all)
+        :return: list of threads
+        """
         latest_posts = []
         if (num is not None) and (not isinstance(num, six.integer_types)):
             num = None
@@ -51,15 +67,30 @@ class Board(models.Model):
         return latest_threads
 
     def get_new(self, num=5):
+        """
+        get board's thread ordered by last comment publish date (alias of get_latest for templates)
+        :param num: number of threads to return (optional: default 5)
+        :return: list of threads
+        """
         if not isinstance(num, six.integer_types):
             num = 5
         return self.get_latest(num)
 
     def __str__(self):
+        """
+        redefine id field to be name
+        :return: board name
+        """
         return self.name
 
 
 class User(AbstractUser):
+    """
+    abstraction of forum's user
+
+    class user is used to collect information of forum's users like avatar, reputation, number of posts, number of
+    threads, email, username, password (hash is used for storage). this is also used for django authentication system.
+    """
 
     def validate_image(fieldfile_obj):
         file_size = fieldfile_obj.file.size
@@ -76,9 +107,17 @@ class User(AbstractUser):
     threads = models.PositiveIntegerField(default=0)
 
     def num_threads(self):
+        """
+        return the number of threads
+        :return: number of threads
+        """
         return Thread.objects.filter(first_post__author=self).count()
 
     def reset_avatar(self):
+        """
+        set profile picture to default
+        :return: nothing
+        """
         if not self.avatar.name.endswith('Djangle_user_default.png'):
             img = self.avatar.path
             try:
@@ -89,18 +128,33 @@ class User(AbstractUser):
             self.save()
 
     def subscribed_threads(self):
+        """
+        return a list of thread subscribed by user
+        :return: subscribed threads list
+        """
         threads = []
         for subscription in self.subscription_set.all():
             threads.append(subscription.thread)
         return threads
 
     def modded_boards(self):
+        """
+        return a list of board bodded by the user
+        :return: list of modded board
+        """
         boards = []
         for mod in self.moderation_set.all():
             boards.append(mod.board)
         return boards
 
     def set_supermod(self, do_set=True):
+        """
+        toggle supermod status
+
+        insert or remove user from supermod group
+        :param do_set: True to insert, False to remove (default True)
+        :return: nothing
+        """
         group, created = Group.objects.get_or_create(name='supermod')
         if created:
             content_type = ContentType.objects.get_or_create(model='board')[0]
@@ -119,18 +173,30 @@ class User(AbstractUser):
                 self.save()
 
     def is_supermod(self):
+        """
+        return whether user is supermod
+        :return: True if user is supermod, else False
+        """
         if self.groups.filter(name='supermod').exists() or self.is_superuser:
             return True
         else:
             return False
 
     def is_mod(self):
+        """
+        return whether user is moderator
+        :return: True if user is moderator, else False
+        """
         if self.moderation_set.all().exists():
             return True
         else:
             return False
 
     def is_banned(self):
+        """
+        return whether user is banned
+        :return: True if user is banned, else False
+        """
         for ban in Ban.objects.filter(user=self):
             if ban.is_active():
                 return True
@@ -138,6 +204,12 @@ class User(AbstractUser):
 
 
 class Post(models.Model):
+    """
+    a message in a thread
+
+    post is the building block of a thread. each registered and active user can write a post in a thread. a post has a
+    message (the actual post), a publish date, an associated thread, number of votes (positive and negative), an author.
+    """
     message = models.CharField(max_length=5000)
     pub_date = models.DateTimeField('publication date')
     thread = models.ForeignKey('Thread')
@@ -146,6 +218,10 @@ class Post(models.Model):
     neg_votes = models.PositiveIntegerField(default=0)
 
     def __str__(self):
+        """
+        redefine id field to return first 50 characters of post
+        :return: string containing first 50 characters of post
+        """
         return self.message[:50]
 
     class Meta:
@@ -153,6 +229,13 @@ class Post(models.Model):
 
     @classmethod
     def create(cls, message, thread, author):
+        """
+        method for post creation
+        :param message: the actual post's message
+        :param thread: the thread associated with the post
+        :param author: the post's author
+        :return: the created post
+        """
         if not (isinstance(message, six.string_types)):
             raise TypeError("message is not a string instance")
         if not (isinstance(thread, Thread)):
@@ -178,12 +261,20 @@ class Post(models.Model):
         return post
 
     def remove(self):
+        """
+        method for removing a post
+        :return:nothing
+        """
         self.author.posts -= 1
         self.author.save()
         self.delete()
         return
 
     def get_page(self):
+        """
+        method for getting post's page number in thread's posts list
+        :return: page number
+        """
         older = self.thread.post_set.filter(pub_date__lte=self.pub_date).count()
         pages = older // ELEM_PER_PAGE
         if older % ELEM_PER_PAGE == 0:
@@ -192,9 +283,16 @@ class Post(models.Model):
 
 
 class Thread(models.Model):
+    """
+    a thread in a board
+
+    thread is composed by posts and represents a discussion. a thread as a title, a first_post (the author's opening
+    message), a close_date if post has been marked as closed, a closer field (the user who closed the thread), three
+    tags (not used yet, meant to simplify search), an associated board and a sticky flag, which determines whether the
+    thread must be on top of board's threads' list or not.
+    """
     title = models.CharField(max_length=200)
     first_post = models.ForeignKey(Post, related_name='thread_message', blank=True, null=True, default=None)
-    open = models.BooleanField
     close_date = models.DateTimeField('closed on', blank=True, null=True, default=None)
     closer = models.ForeignKey(User, blank=True, null=True, default=None)
     tag1 = models.CharField(max_length=50, blank=True, null=True, default=None)
@@ -204,13 +302,32 @@ class Thread(models.Model):
     sticky = models.BooleanField(default=False)
 
     def __str__(self):
+        """
+        redefine id field to return first 50 characters of title
+        :return: first 50 characters of title
+        """
         return self.title[:50]
 
     def last_post(self):
+        """
+        return lats post added to thread
+        :return: last post added
+        """
         return self.post_set.last()
 
     @classmethod
     def create(cls, title, message, board, author, tag1=None, tag2=None, tag3=None):
+        """
+        method for new threads creation
+        :param title: thread title
+        :param message: first post's message
+        :param board: board associated with thread
+        :param author: author of thread
+        :param tag1: string tag for indexing threads (not used yet)
+        :param tag2: string tag for indexing threads (not used yet)
+        :param tag3: string tag for indexing threads (not used yet)
+        :return: the new thread
+        """
         if not (isinstance(title, six.string_types)):
             raise TypeError("title is not a string instance")
         if not len(title) <= 200:
@@ -228,9 +345,9 @@ class Thread(models.Model):
         if not author.is_active:
             raise ValueError("author is not an active user")
         for tag in (tag1, tag2, tag3):
-            if not (isinstance(tag, six.string_types)) and not tag == None:
+            if not (isinstance(tag, six.string_types)) and tag is not None:
                 raise TypeError("tag is not a string instance")
-            if not tag == None and not len(tag) <= 50:
+            if tag is not None and not len(tag) <= 50:
                 raise ValueError("tag too long")
 
         thread = cls(title=title, board=board, tag1=tag1, tag2=tag2, tag3=tag3)
@@ -244,18 +361,30 @@ class Thread(models.Model):
         return thread
 
     def remove(self):
+        """
+        method for thread deletion
+        :return: nothing
+        """
         for post in self.post_set.all():
             post.remove()
         self.delete()
         return
 
     def sub_users(self):
+        """
+        return a list of user who subscribed the thread
+        :return: list of subscribers
+        """
         users = []
         for sub in self.subscription_set.all():
             users.append(sub.user)
         return users
 
     def is_closed(self):
+        """
+        return whether close date is previous to timezone.now()
+        :return: True if close_date < now, else False
+        """
         now = timezone.now()
         if self.close_date and (self.close_date < now):
             return True
@@ -263,6 +392,15 @@ class Thread(models.Model):
 
 
 class Subscription(models.Model):
+    """
+    class for managing subscriptions
+
+    a subscription is a relation between an user and a thread: it means that the user cares about receiving mail
+    notifications when thread is updated. subscription's fields are: thread to subscribe, subscriber user, async flag to
+    determinate if notification should be sent periodically or every time thread is updated, sync_interval time between
+    asynchronous notification, last_sync datetime field to determinate which posts are to be notified, active flag (not
+    used yet, it will give the user the possibility to disable subscription for some time without deleting it).
+    """
     thread = models.ForeignKey(Thread)
     user = models.ForeignKey(User)
     async = models.BooleanField(default=True)
@@ -271,6 +409,11 @@ class Subscription(models.Model):
     active = models.BooleanField(default=True)
 
     def is_expired(self, time=timezone.now()):
+        """
+        method to know if sync_interval has passed since last mail notification and there are new posts
+        :param time: date to check (optional, default now)
+        :return: True if subscription is expired, else False
+        """
         return ((self.last_sync + self.sync_interval < time) and
                 (self.thread.post_set.latest().pub_date > self.last_sync))
 
@@ -279,6 +422,16 @@ class Subscription(models.Model):
 
     @classmethod
     def create(cls, thread, user, async, sync_interval=None, last_sync='default', active=True):
+        """
+        method for new subscriptions creation
+        :param thread: the thread to subscribe
+        :param user: the subscriber user
+        :param async: True for asynchronous notification, else False
+        :param sync_interval: period that must pass between two notifications
+        :param last_sync: last sync time (default now)
+        :param active: whether subscription is active
+        :return: the new subscription
+        """
         if not (isinstance(thread, Thread)):
             raise TypeError("thread is not a Thread instance")
         if not (isinstance(user, User)):
@@ -310,6 +463,12 @@ class Subscription(models.Model):
 
 
 class Vote(models.Model):
+    """
+    a vote for a post/thread
+
+    vote class is used to store user's preferences about posts and to make sure an user can't vote two times for the
+    same post. it has three fields: the voting user, the voted post and the value of the vote positive or negative)
+    """
     post = models.ForeignKey(Post)
     user = models.ForeignKey(User)
     value = models.BooleanField()
@@ -319,6 +478,15 @@ class Vote(models.Model):
 
     @classmethod
     def vote(cls, post, user, value):
+        """
+        method for new votes creation
+
+        this ensures posts' and users' static attributes to be updated whenever a vote is created or changed
+        :param post: voting user
+        :param user: voted post
+        :param value: vote value (True for positive, False for negative)
+        :return: the new vote
+        """
         if user == post.author:
             return
         vote = Vote.objects.filter(post=post, user=user).first()
@@ -372,6 +540,12 @@ class Vote(models.Model):
 
 
 class Ban(models.Model):
+    """
+    representation of ban
+
+    ban class is used to store information about user's ban, such as banned user, date of ban, duration, banner user,
+    reason of ban.
+    """
     user = models.ForeignKey(User)
     start = models.DateTimeField('start on', default=timezone.now)
     duration = models.DurationField('duration', blank=True, null=True, default=None)
@@ -379,18 +553,32 @@ class Ban(models.Model):
     reason = models.CharField(max_length=50)
 
     def is_active(self):
+        """
+        method to know is ban is valid or expired
+        :return: True if ban is active, else False
+        """
         if self.duration is None or self.start + self.duration >= timezone.now():
             return True
         else:
             return False
 
     def remove(self):
+        """
+        method for removing bans
+        :return: nothing
+        """
         self.user.is_active = True
         self.user.save()
         self.delete()
 
 
 class Moderation(models.Model):
+    """
+    moderation relation between an user and a board
+
+    moderation class is used to express that an user has particular permissions over a board, like closing threads,
+    deleting posts or banning users (globally)
+    """
     user = models.ForeignKey(User)
     board = models.ForeignKey(Board)
 

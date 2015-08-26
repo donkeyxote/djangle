@@ -7,9 +7,9 @@
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
 {% block body %}
-    {%  if error %}
+    {%  if errors %}
         <div class="alert alert-danger">
-            <strong>ERROR:</strong> {% for err in error %}{{err}}{% endfor %}
+            <strong>ERROR:</strong> {% for error in errors %}{{error}}{% endfor %}
         </div>
     {%  endif %}
     <div class="row">
