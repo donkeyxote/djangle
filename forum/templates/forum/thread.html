@@ -15,6 +15,7 @@
     <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
 {% block body %}
+<script src="{% static 'forum/js/localTime.js' %}"></script>
     {%  if errors %}
         <div class="alert alert-danger">
             <strong>ERROR:</strong> {% for error in errors %}{{error}}{% endfor %}
@@ -84,7 +85,7 @@
                         <div class="panel-body">
                             <div class="row">
                                 <div class="col-sm-9">
-                                    <span class="small text-muted">{{ post.pub_date|date:'Y-m-d H:i' }}</span><br/>
+                                    <span class="small text-muted"><script> document.write(date("{{ post.pub_date|date:'d M Y H:i:s' }}"))</script></span><br/>
                                     <div>{{ post.message|linebreaksbr }}</div>
                                 </div>
                                 <div class="col-sm-3 text-right">

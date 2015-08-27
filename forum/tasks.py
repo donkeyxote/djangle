@@ -37,7 +37,7 @@ def async_mail():
             if sub.is_expired(time):
                 message += 'New messages on thread '+sub.thread.title+':'+sep
                 new_posts = sub.thread.post_set.filter(pub_date__range=(sub.last_sync, time)).order_by('pub_date')
-                post = ('on '+post.pub_date.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT))+' ' +
+                post = ('on '+post.pub_date.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT))+' UTC ' +
                         post.author.username+' wrote :'+os.linesep +
                         post.message for post in new_posts)
                 message += sep.join(post)
@@ -66,7 +66,7 @@ def sync_mail(post):
     """
     subs = (sub for sub in post.thread.subscription_set.filter(async=False, active=True))
     message = 'New message on thread '+post.thread.title+':'+sep +\
-              'on '+post.pub_date.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT))+' ' +\
+              'on '+post.pub_date.strftime("%s %s" % (DATE_FORMAT, TIME_FORMAT))+' UTC ' +\
               post.author.username+' wrote :'+os.linesep+post.message
     for sub in subs:
         user_message = 'Hi '+sub.user.username+', you have some news from djangle:'+sep+20*'_'+sep+message
