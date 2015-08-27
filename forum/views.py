@@ -4,10 +4,11 @@ module for form views
 
 import os
 import datetime
-from operator import itemgetter
+from operator import itemgetter, attrgetter
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -293,7 +294,7 @@ def edit_profile(request):
                     errors.append('image must end with .jpg, .jpeg, .gif or .png')
     else:
         form = UserEditForm()
-    return render(request, 'forum/profile_edit.html', {'form': form, 'user': request.user, 'error': errors})
+    return render(request, 'forum/profile_edit.html', {'form': form, 'user': request.user, 'errors': errors})
 
 
 @login_required
@@ -591,3 +592,35 @@ def manage_board_mod(request, board_code):
     else:
         form = BoardModForm(board=board)
     return render(request, 'forum/create.html', {'forms': [form], 'object': 'board moderation'})
+
+
+@login_required
+def tag_view(request, tag, page):
+    """
+    view for grouping thread by tag
+
+    render a list of threads related to the same topic (tag), if threads' number exceeds ELEM_PER_PAGE
+    (set in djangle.settings) they will be paginated as appropriate.
+
+    :param request: the user's request
+    :param tag: string representing the tag
+    :param page: page of threads' list to show
+    :return: render the list of threads in selected page
+    """
+    threads = Thread.objects.filter(Q(tag1=tag) | Q(tag2=tag) | Q(tag3=tag))
+    posts = []
+    for thread in threads:
+        if thread.last_post() is not None:
+            posts.append(thread.last_post())
+    posts = sorted(posts, key=attrgetter('pub_date'), reverse=True)
+    threads = []
+    for post in posts:
+        threads.append(post.thread)
+    paginator = Paginator(threads, ELEM_PER_PAGE)
+    try:
+        threads = paginator.page(page)
+    except PageNotAnInteger:
+        threads = paginator.page(1)
+    except EmptyPage:
+        threads = paginator.page(paginator.num_pages)
+    return render(request, 'forum/tag.html', {'tag': tag, 'threads': threads})

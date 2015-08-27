@@ -1,7 +1,7 @@
-{%  extends 'forum/base.html' %}
+{% extends 'forum/base.html' %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
-{%  block titlesection %}- Forum - {{ thread }}{%  endblock %}
+{% block titlesection %}- Forum - {{ thread }}{%  endblock %}
 {% block menuleft %}<li><a href="{% url 'forum:board' thread.board.code '' %}" class="navbar-link">{{ thread.board.name }}</a></li>{% endblock %}
 {% block menu_per_page %}
     {% if request.user.is_authenticated %}
@@ -11,9 +11,6 @@
 {% block mod_menu %}
     <li><a href="{% url 'forum:stick_thread' thread.pk %}">{% if thread.sticky %}Unstick Thread{% else %}Stick Thread{% endif %}</a></li>
 {% endblock %}
-{% block head %}
-    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
-{% endblock %}
 {% block body %}
 <script src="{% static 'forum/js/localTime.js' %}"></script>
     {%  if errors %}
@@ -22,7 +19,16 @@
         </div>
     {%  endif %}
     <div class="row">
-        <div class="col-xs-12 text-right">
+        <div class="col-sm-2 hidden-xs"></div>
+        <div class="col-sm-6 text-left">
+            {% if thread.get_tags %}
+                <span class="gliphycon glyphicon glyphicon-tags"></span> &nbsp;
+            {% endif %}
+            {% for tag in thread.get_tags  %}
+                <a href="{% url "forum:tag" tag none %}">{{ tag }}</a> &nbsp;
+            {% endfor %}
+        </div>
+        <div class="col-sm-4 text-right">
             {% if not thread.is_closed %}
                 {% if thread in request.user.subscribed_threads %}
                     <a href="{% url 'forum:unsubscribe' thread.pk %}" class="btn btn-default subscr">Unsubscribe</a>

@@ -400,6 +400,21 @@ class Thread(models.Model):
             return True
         return False
 
+    def get_tags(self):
+        """
+        returns threads' tags list
+        :return: list of tags
+        """
+        tags = []
+        if self.tag1:
+            tags.append(self.tag1)
+        if self.tag2:
+            tags.append(self.tag2)
+        if self.tag3:
+            tags.append(self.tag3)
+        return tags
+
+
 
 class Subscription(models.Model):
     """
