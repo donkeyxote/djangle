@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^thread/(?P<thread_pk>\d+)/unsubscribe/$', views.unsubscribe, name='unsubscribe'),
     url(r'^thread/(?P<thread_pk>\d+)/close/$', views.toggle_close_thread, name='toggle_close_thread'),
     url(r'^thread/(?P<thread_pk>\d+)/stick/$', views.stick_thread, name='stick_thread'),
+    url(r'^tag/(?P<tag>\w+)/(?P<page>\d*)/?$', views.tag_view, name='tag'),
     url(r'^manage/supermods/$', views.manage_supermods, name='supermods'),
     url(r'^manage/supermods/toggle/(?P<user_pk>\d+)/$', views.supermod_toggle, name='supermod_toggle'),
     url(r'^manage/moderators/$', views.moderators_view, name='moderators'),

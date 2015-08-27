@@ -1,11 +1,7 @@
 {%  extends 'forum/base.html' %}
-{% load staticfiles %}
 {% load crispy_forms_tags %}
 {%  block titlesection %}- Forum - edit {{ user.username }} profile{%  endblock %}
 {% block menu %}{% endblock %}
-{% block head %}
-    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
-{% endblock %}
 {% block body %}
     {%  if errors %}
         <div class="alert alert-danger">

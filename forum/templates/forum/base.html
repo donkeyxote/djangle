@@ -1,4 +1,5 @@
 {% extends 'base.html'%}
+{% load staticfiles %}
 {% block subtitle %}<a href="{% url 'forum:index' %}" class="navbar-link">Forum</a>{%  endblock %}
 {% block menu %}
     {% block menu_per_page %}{% endblock %}
@@ -23,5 +24,8 @@
             </div>
         </li>
     {% endif %}
+{% endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
 {% endblock %}
 

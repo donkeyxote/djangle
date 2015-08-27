@@ -1,9 +1,5 @@
 {% extends 'forum/base.html' %}
-{% load staticfiles %}
 {%  block titlesection %}- Forum - Supermods{%  endblock %}
-{% block head %}
-    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
-{% endblock %}
 {% block body %}
     {% for user in supermods %}
         <div>

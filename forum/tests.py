@@ -77,6 +77,7 @@ class CreateBoardTest(TestCase):
         self.client.login(username='smodtest', password='password')
         response = self.client.get(reverse('forum:create_board'), follow=True)
         self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'forum/create.html')
 
 
 class BoardFormTest(TestCase):

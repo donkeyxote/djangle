@@ -1,9 +1,5 @@
 {%  extends 'forum/base.html' %}
-{% load staticfiles %}
 {%  block titlesection %}- Forum - user {{ user.username }}{%  endblock %}
-{% block head %}
-    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
-{% endblock %}
 {% block body %}
     <div class="row">
         <div class="col-sm-4">

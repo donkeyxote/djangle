@@ -1,9 +1,5 @@
 {% extends 'forum/base.html' %}
-{% load staticfiles %}
 {%  block titlesection %}- Forum - Moderators{%  endblock %}
-{% block head %}
-    <link rel="stylesheet" type="text/css" href='{% static 'forum/style.css' %}' />
-{% endblock %}
 {% block body %}
     {% for board, board_moderators in moderators.items %}
         <a href="{% url 'forum:board' board.code none %}" id="board">
