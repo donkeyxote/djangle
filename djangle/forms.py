@@ -1,3 +1,6 @@
+"""
+module for site's forms
+"""
 from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django import forms
@@ -5,16 +8,22 @@ from forum.models import User
 
 
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(max_length=254, widget=forms.TextInput(attrs={'autofocus':'autofocus'}))
+    """
+    form for user authentication
+    """
+    username = forms.CharField(max_length=254, widget=forms.TextInput(attrs={'autofocus': 'autofocus'}))
 
     error_messages = {
-        'invalid_login': ("Please enter a correct %(username)s and password. "
-                           "Note that password field is case-sensitive."),
-        'inactive': ("This account is inactive."),
+        'invalid_login': "Please enter a correct %(username)s and password. "
+                         "Note that password field is case-sensitive.",
+        'inactive': "This account is inactive.",
     }
 
 
 class UserCreationForm(DjangoUserCreationForm):
+    """
+    form for user creation
+    """
     email = forms.EmailField(required=True)
 
     class Meta:
