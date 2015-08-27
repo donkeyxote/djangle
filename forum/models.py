@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.forms import FileInput
 from django.utils import timezone, six
 from django.core.exceptions import ValidationError
 from djangle.settings import ELEM_PER_PAGE
@@ -74,6 +75,11 @@ class User(AbstractUser):
                                validators=[validate_image])
     posts = models.PositiveIntegerField(default=0)
     threads = models.PositiveIntegerField(default=0)
+
+    def image_tag(self):
+        return u'<img src="%s" />' % self.avatar.url
+    image_tag.short_description = 'Current avatar'
+    image_tag.allow_tags = True
 
     def num_threads(self):
         return Thread.objects.filter(first_post__author=self).count()

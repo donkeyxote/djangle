@@ -1,6 +1,5 @@
 from urllib.parse import urlparse
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs
 from django.utils.six import wraps
 from djangle import settings
@@ -11,7 +10,12 @@ def user_passes_test_with_403(test_func):
     Decorator for views that checks that the user passes the given test,
     redirecting to the log-in page if not logged in and to 403 page if necessary.
     Test should be a callable that takes the user object and returns True if the user passes.
+
+    :param test_func: callable function that takes request User and returns True if the user is allowed to view the page
+    :return: render requested page if user has permissions, login page if user isn't authenticated, error 403 if user
+    hasn't permissions
     """
+
     def decorator(view_func):
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
