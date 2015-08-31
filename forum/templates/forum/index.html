@@ -5,6 +5,16 @@
     {% if request.user.is_authenticated and boards %}
         <li><a href='{% url 'forum:create_thread' %}' class="navbar-link">New Thread</a></li>
     {% endif %}
+    <li>
+        <div class="dropdown">
+            <span class=" dropdown-toggle navbar-link" role="button" data-toggle="dropdown">Boards</span>
+            <ul class="dropdown-menu">
+                {% for board in boards %}
+                    <li><a href="{%  url 'forum:board' board.code none %}">{{ board.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </li>
 {% endblock %}
 {% block body %}
     <script src="{% static 'forum/js/localTime.js' %}"></script>
@@ -19,7 +29,7 @@
                 <div class="well well-sm boards lead">
                     <div class="row">
                         <div class="col-xs-10">
-                            {{ board.name }}
+                            <span class="glyphicon glyphicon-list-alt"></span> {{ board.name }}
                         </div>
                         <div class="col-xs-2 text-right">
                             {% if board in request.user.modded_boards%}

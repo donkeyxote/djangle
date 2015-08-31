@@ -188,7 +188,7 @@ header {
     text-shadow: none;
 }
 
-.navbar-link:link, .navbar-link:visited, .navbar-link:hover, .navbar-brand{
+.navbar-link:link, .navbar-link:visited, .navbar-link:hover, .navbar-link{
     float:left;
     height:50px;
     padding:15px 15px;
@@ -199,7 +199,7 @@ header {
     text-decoration: none;
 }
 
-.navbar-link:hover, .navbar-brand>a:hover{
+.navbar-link:hover{
     float:left;
     height:50px;
     padding:15px 15px;
@@ -210,6 +210,10 @@ header {
     text-shadow: none;
     font-weight: normal;
     text-decoration: none;
+}
+
+.navbar-collapse{
+    background-color: #ff9900;
 }
 
 .cog-button{
@@ -227,6 +231,17 @@ header {
     color:#ff9900;
     background: #fff;
     text-shadow: none;
+}
+
+.boards-menu{
+    float:left;
+    height:50px;
+    padding:10px 15px 15px;
+    font-size:18px;
+    line-height:22px;
+    color:#fff;
+    font-weight: normal;
+    text-decoration: none;
 }
 
 .dropdown-menu{

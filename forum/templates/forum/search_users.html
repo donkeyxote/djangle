@@ -1,0 +1,56 @@
+{% extends 'forum/base.html' %}
+{% load staticfiles %}
+{% block titlesection %}- Forum - search{%  endblock %}
+{% block menu_per_page %}
+    {% if request.user.is_authenticated %}
+        <li><a href='{% url 'forum:create_thread' %}' class="navbar-link">New Thread</a></li>
+    {% endif %}
+{% endblock %}
+{% block body %}
+    <script src="{% static 'forum/js/localTime.js' %}"></script>
+    {%  if errors %}
+        <div class="alert alert-danger">
+            {% for error in errors %}{{error}}{% endfor %}
+        </div>
+    {%  endif %}
+    <a id="board">
+        <div class="well well-sm boards lead">
+            <div class="row">
+                <div class="col-xs-10">
+                    <span class="glyphicon glyphicon-search"></span> search: {{ search }}
+                </div>
+                <div class="col-xs-2"></div>
+            </div>
+        </div>
+    </a>
+    <div class="row">
+        <div class="col-md-1 hidden-xs"></div>
+        <div class="col-md-11 col-xs-12">
+            {% if users %}
+                {% for user in users %}
+                    <div class="mod-list-item">
+                        <a href="{% url 'forum:profile' user.username %}"><img src="{{ user.avatar.url }}" class="img-circle" width="30" height="30"></a>
+                        <a href="{% url 'forum:profile' user.username %} " class="lead">{{ user.username }}</a>
+                        <a href="{% url 'forum:profile' user.username %} " class="lead">{{ user.first_name }}</a>
+                        <a href="{% url 'forum:profile' user.username %} " class="lead">{{ user.last_name}}</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                No users for this search
+            {% endif %}
+        </div>
+    </div>
+    {% if users.has_other_pages %}
+    <div class="row text-center">
+        <ul class="pagination">
+            {% for page in users.paginator.page_range %}
+                {% if page == users.number %}
+                    <li class="active"><a href="{% url 'forum:search' page %}">{{ page }}</a></li>
+                {% else %}
+                    <li><a href="{% url 'forum:search' page %}">{{ page }}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+{% endblock %}

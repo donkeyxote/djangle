@@ -2,7 +2,9 @@
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 {% block titlesection %}- Forum - {{ thread }}{%  endblock %}
-{% block menuleft %}<li><a href="{% url 'forum:board' thread.board.code '' %}" class="navbar-link">{{ thread.board.name }}</a></li>{% endblock %}
+{% block menuleft %}
+    <li><a href="{% url 'forum:index' %}" class="navbar-link">Forum</a></li>
+    <li><a href="{% url 'forum:board' thread.board.code '' %}" class="navbar-link">{{ thread.board.name }}</a></li>{% endblock %}
 {% block menu_per_page %}
     {% if request.user.is_authenticated %}
         <li><a href='{% url 'forum:create_thread' %}' class="navbar-link">New Thread</a></li>

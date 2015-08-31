@@ -32,4 +32,6 @@ urlpatterns = [
     url(r'^remove/moderation/(?P<user_pk>\d+)/(?P<board_code>\w+)', views.remove_mod, name='remove_mod'),
     url(r'^manage/ban/(?P<user_pk>\d+)/$', views.ban_user, name='ban_user'),
     url(r'^manage/unban/(?P<user_pk>\d+)/$', views.unban_user, name='unban_user'),
+    url(r'^search/(?P<page>\d*)/?$', views.search, name='search'),
+    url(r'^search/new/$', views.new_search, name='new_search')
 ]

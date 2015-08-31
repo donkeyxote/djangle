@@ -32,7 +32,7 @@
         </div>
     </header>
 
-    <nav class="navbar navbar-djangle">
+    <nav class="navbar navbar-djangle navbar-static-top">
         <div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#menuNavbar">
@@ -40,14 +40,13 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand">{% block subtitle %}{% endblock %}</a>
             </div>
             <div class="collapse navbar-collapse" id="menuNavbar">
                 <ul class="nav navbar-nav navbar-left">
                     {% block menuleft %}{% endblock %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    {% block menu %}{% endblock %}
+                    {% block menuright %}{% endblock %}
                 </ul>
             </div>
         </div>

@@ -8,6 +8,7 @@ from forum.models import Board, Thread, User, Moderation
 from forum.forms import BoardForm
 from djangle import settings
 
+
 # Create your tests here.
 
 
@@ -19,7 +20,8 @@ class BoardTest(TestCase):
         self.assertIsInstance(board2, Board)
 
     def test_creation_with_invalid_name(self):
-        self.assertRaises(ValueError, Board.create, name='board name too long for this model really too too long', code='bcode')
+        self.assertRaises(ValueError, Board.create, name='board name too long for this model really too too long',
+                          code='bcode')
         self.assertRaises(TypeError, Board.create, name=None, code='bcode')
 
     def test_creation_with_invalid_code(self):
@@ -41,8 +43,8 @@ class BoardTest(TestCase):
         pub_date = timezone.now()
         thread_list = []
         for i in range(10):
-            thread_list.append(Thread.create(title='thread'+str(i), message=str(i), author=user, board=board))
-            thread_list[i].first_post.pub_date = pub_date-datetime.timedelta(minutes=i)
+            thread_list.append(Thread.create(title='thread' + str(i), message=str(i), author=user, board=board))
+            thread_list[i].first_post.pub_date = pub_date - datetime.timedelta(minutes=i)
             thread_list[i].first_post.save()
         threads1 = board.get_latest()
         threads2 = board.get_latest(5)
@@ -55,7 +57,7 @@ class BoardTest(TestCase):
 class CreateBoardTest(TestCase):
     def test_view_with_anonymous_user(self):
         response = self.client.get(reverse('forum:create_board'), follow=True)
-        self.assertRedirects(response, settings.LOGIN_URL+'/?next='+urlquote(reverse('forum:create_board'), ''))
+        self.assertRedirects(response, settings.LOGIN_URL + '/?next=' + urlquote(reverse('forum:create_board'), ''))
 
     def test_view_with_logged_user(self):
         User.objects.create_user(username='usertest', password='password', email='test@email.com')

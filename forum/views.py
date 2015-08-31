@@ -18,7 +18,7 @@ from .decorators import user_passes_test_with_403
 from .models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban
 from .tasks import sync_mail, del_mail, ban_create_mail, ban_remove_mail
 from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm, \
-    BoardModForm
+    BoardModForm, SearchForm
 
 from djangle.settings import ELEM_PER_PAGE
 
@@ -62,7 +62,7 @@ def board_view(request, board_code, page):
             st_threads.append(thread)
         else:
             threads.append(thread)
-    thread_set = st_threads+threads
+    thread_set = st_threads + threads
     paginator = Paginator(thread_set, ELEM_PER_PAGE)
     try:
         thread_set = paginator.page(page)
@@ -100,7 +100,8 @@ def thread_view(request, thread_pk, page):
                 errors.append(str(error))
                 return render(request, 'errors.html', {'errors': errors})
             return HttpResponseRedirect(reverse('forum:thread',
-                                                kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages})+'#bottom')
+                                                kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages})
+                                        + '#bottom')
     else:
         form = PostForm()
     try:
@@ -143,6 +144,7 @@ def vote_view(request, post_pk, vote):
     view for voting post
 
     a simple interface for templates to function forum.models.Vote.vote
+
     :param request: the user's request
     :param post_pk: primary key of post to vote
     :param vote: vote value. use "up" for positive vote, "down" for negative
@@ -163,6 +165,7 @@ def create_thread(request):
     view for threads' creation
 
     display the form for new threads' creation
+
     :param request: the user's request
     :return: render form or redirect to new thread if thread is created
     """
@@ -198,6 +201,7 @@ def profile(request, username):
 
     render information about selected user like: first and last name (only if set), post and thread number, reputation,
     top threads, top posts, avatar, join date, last login, role
+
     :param request: the user's request
     :param username: username of the user to show
     :return: render user's profile info
@@ -226,7 +230,8 @@ def del_post(request, post_pk):
     """
     view for deleting posts or threads
 
-    delete post or thread of you are author, moderator or supermoderator and send mail to author.
+    delete post or thread of you are author, moderator or supermoderator and send mail to author
+
     :param request: the user's request
     :param post_pk: primary key of post (or first_post if deleting thread)
     :return: render to thread on current page (or first page of board if deleting thread)
@@ -253,7 +258,8 @@ def edit_profile(request):
     """
     view for change user's info
 
-    change some user's info like: first and last name, avatar.
+    change some user's info like: first and last name, avatar
+
     :param request: the user's request
     :return: render info's updating page
     """
@@ -272,15 +278,14 @@ def edit_profile(request):
             form = UserEditForm(request.POST, request.FILES)
             try:
                 check = form.is_valid()
-            except KeyError:
+            except KeyError as error:
                 check = False
-            for error in form._errors.values():
-                    errors.append(error)
+                errors.append(str(error))
             if check and form.cleaned_data['avatar']:
                 image = form.cleaned_data['avatar']
                 extension = image.name.rsplit('.', 1)[1]
                 if extension in ('jpg', 'jpeg', 'gif', 'png'):
-                    image.name = request.user.username+'.'+extension
+                    image.name = request.user.username + '.' + extension
                     if not request.user.avatar.name.endswith('Djangle_user_default.png'):
                         img_del = request.user.avatar.path
                         try:
@@ -303,6 +308,7 @@ def reset_user_field(request, field):
     view for clearing fields
 
     interface for templates to clear user's editable fields
+
     :param request: the user's request
     :param field: name of field to clear. use "first_name" for first name, "last_name" for last name and "avatar"
     for profile picture
@@ -325,6 +331,7 @@ def subscribe(request, thread_pk):
     view for creating subscriptions
 
     render form for subscriptions' creation
+
     :param request: the user's request
     :param thread_pk: primary key of thread to subscribe
     :return: render form for subscriptions' creation or redirect to thread if subscription is created
@@ -359,6 +366,7 @@ def unsubscribe(request, thread_pk):
     view for subscription deletion
 
     delete user's subscription to thread
+
     :param request: the user's request
     :param thread_pk: primary key of thread to unsubscribe
     :return: redirect to selected thread
@@ -375,6 +383,7 @@ def toggle_close_thread(request, thread_pk):
     view for closing/opening threads
 
     mark thread as closed/open if user is author, moderator or supermoderator and disable new posts
+
     :param request: the user's request
     :param thread_pk: primary key of thread to close
     :return: redirect to thread view
@@ -398,6 +407,7 @@ def manage_user_mod(request, user_pk):
     view for managing moderation for user
 
     display form for selecting which boards user can moderate
+
     :param request: the user's request
     :param user_pk: primary key of user to manage
     :return: render form for moderation management or redirect to target user's profile if management is over
@@ -426,6 +436,7 @@ def ban_user(request, user_pk):
 
     ban an user and send a mail as notification. if user is banned already, the selected duration will be added to
     previous one
+
     :param request: the user's request
     :param user_pk: primary key of user to ban
     :return: render ban form or redirect to target user's profile if ban is created
@@ -456,7 +467,7 @@ def ban_user(request, user_pk):
             ban_create_mail.delay(ban)
             if ban_old:
                 ban_old.delete()
-        return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
+            return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
     else:
         form = AddBanForm()
     return render(request, 'forum/create.html', {'forms': [form]})
@@ -468,6 +479,7 @@ def unban_user(request, user_pk):
     view for removing ban
 
     remove ban for selected user and send notification mail
+
     :param request: the user's request
     :param user_pk: primary key of user to redeem
     :return: redirect to target user's profile
@@ -485,6 +497,7 @@ def manage_supermods(request):
     view for supermoderator overview
 
     show supermoderators' list
+
     :param request: the user's request
     :return: render supermoderators' list
     """
@@ -501,6 +514,7 @@ def supermod_toggle(request, user_pk):
     view for supermoderators management
 
     set if user is supermoderator
+
     :param request: the user's request
     :param user_pk: primary key of user to toggle
     :return: redirect to supermoderators view
@@ -519,6 +533,7 @@ def stick_thread(request, thread_pk):
     view to stick thread
 
     set if thread is sticky (to keep it on top of thread list in board)
+
     :param request: the user's request
     :param thread_pk: primary key of thread to stick
     :return: redirect to thread's view
@@ -539,6 +554,7 @@ def moderators_view(request):
     view for moderations' overview
 
     show a list of board in which each element has a list of moderators
+
     :param request: the user's request
     :return: render the list of moderators for each board
     """
@@ -554,6 +570,7 @@ def remove_mod(request, user_pk, board_code):
     view for removing moderators from a board
 
     remove moderator from selected board and redirect to moderations' overview
+
     :param request: the user's request
     :param user_pk: primary key of user to remove from moderators
     :param board_code: code of board from which remove moderation
@@ -573,6 +590,7 @@ def manage_board_mod(request, board_code):
 
     show form to update the list of moderator in a board. all users will be shown and selected ones will be moderators
     after post
+
     :param request: the user's request
     :param board_code: code of board to manage
     :return: render moderations' overview
@@ -623,4 +641,92 @@ def tag_view(request, tag, page):
         threads = paginator.page(1)
     except EmptyPage:
         threads = paginator.page(paginator.num_pages)
-    return render(request, 'forum/tag.html', {'tag': tag, 'threads': threads})
+    return render(request, 'forum/search_threads.html', {'search': 'Tag = ' + tag, 'threads': threads})
+
+
+@login_required
+def search(request, page):
+    """
+    view for search results
+
+    render a list of threads selected by title, tags and username or a list of users selected by username,
+    if objects' number exceeds ELEM_PER_PAGE (set in djangle.settings) they will be paginated as appropriate
+
+    :param request: the user's request
+    :param page: page to show
+    :return: render the list of threads/users
+    """
+    if not request.method == 'POST':
+        if 'search-form' in request.session:
+            request.POST = request.session['search-form']
+            request.method = 'POST'
+    form = SearchForm(request.POST)
+    request.session['search-form'] = request.POST
+    threads = []
+    search_message = ''
+    if form.is_valid():
+        if form.cleaned_data['search_item'] == 'user':
+            if form.cleaned_data['username']:
+                username = form.cleaned_data['username']
+                users = User.objects.filter(username__icontains=username)
+                paginator = Paginator(users, ELEM_PER_PAGE)
+                try:
+                    users = paginator.page(page)
+                except PageNotAnInteger:
+                    users = paginator.page(1)
+                except EmptyPage:
+                    users = paginator.page(paginator.num_pages)
+                return render(request,
+                              'forum/search_users.html',
+                              {'search': 'Username = ' + username, 'users': users, 'page': page})
+        else:
+            if not (form.cleaned_data['title'] or form.cleaned_data['tags'] or form.cleaned_data['username']):
+                return render(request, 'forum/search_threads.html', {'search': search_message,
+                                                                     'threads': threads,
+                                                                     'page': page,
+                                                                     'errors': ['empty form']})
+            threads = Thread.objects.all()
+            if form.cleaned_data['title']:
+                title = form.cleaned_data['title']
+                threads = threads.filter(title__icontains=title)
+                search_message = 'Title = ' + title
+            if form.cleaned_data['tags']:
+                tags = form.cleaned_data['tags']
+                threads = threads.filter(Q(tag1__icontains=tags) | Q(tag2__icontains=tags) | Q(tag3__icontains=tags))
+                search_message += ' Tag = ' + tags
+            if form.cleaned_data['username']:
+                username = form.cleaned_data['username']
+                threads = threads.filter(first_post__author__username__icontains=username)
+                search_message += ' Author = ' + username
+            posts = []
+            for thread in threads:
+                if thread.last_post() is not None:
+                    posts.append(thread.last_post())
+            posts = sorted(posts, key=attrgetter('pub_date'), reverse=True)
+            threads = [post.thread for post in posts]
+            paginator = Paginator(threads, ELEM_PER_PAGE)
+            try:
+                threads = paginator.page(page)
+            except PageNotAnInteger:
+                threads = paginator.page(1)
+            except EmptyPage:
+                threads = paginator.page(paginator.num_pages)
+        return render(request, 'forum/search_threads.html', {'search': search_message, 'threads': threads, 'page': page})
+    return render(request, 'forum/create.html', {'forms': [form], 'object': 'search'})
+
+
+@login_required
+def new_search(request):
+    """
+    view for a new search
+
+    display the form for new search
+
+    :param request: the user's request
+    :return: render the search form or redirect to search results
+    """
+    if request.method == 'POST':
+        request.session['search-form'] = request.POST
+        return HttpResponseRedirect(reverse('forum:search', kwargs={'page': ''}))
+    form = SearchForm()
+    return render(request, 'forum/create.html', {'forms': [form], 'object': 'search'})

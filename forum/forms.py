@@ -40,7 +40,6 @@ class ThreadForm(forms.ModelForm):
     post = PostForm()
 
     class Meta:
-
         model = Thread
         fields = ['title', 'board', 'tag1', 'tag2', 'tag3']
 
@@ -56,13 +55,14 @@ class UserEditForm(forms.ModelForm):
 
     def clean_avatar(self):
         avatar = self.cleaned_data.get('avatar', None)
-        if avatar: # this is not working, if image field is blank
+        if avatar:  # this is not working, if image field is blank
             try:
                 if avatar.size:
                     if avatar:
-                        if avatar.size > 200*1024:
+                        if avatar.size > 200 * 1024:
                             self._errors['avatar'] = 'file too big: max size is 200 kb'
-                            raise ValidationError(self.fields['avatar'].error_messages['file too big: max size is 200 kb'])
+                            raise ValidationError(
+                                self.fields['avatar'].error_messages['file too big: max size is 200 kb'])
 
                         return avatar
                     else:
@@ -151,3 +151,37 @@ class BoardModForm(forms.Form):
         for user in User.objects.all().order_by('username'):
             value = board.moderation_set.filter(user=user).exists()
             self.fields[user.username] = forms.BooleanField(label=user.username, required=False, initial=value)
+
+
+class SearchForm(forms.Form):
+    """
+    form for advanced search
+    """
+    search_item = forms.ChoiceField(choices=(
+        ('thread', 'thread'),
+        ('user', 'user')
+    ), required=False)
+    title = forms.CharField(max_length=50, required=False)
+    tags = forms.CharField(max_length=50, required=False)
+    username = forms.CharField(max_length=50, required=False)
+
+    def clean(self):
+        cleaned_data = super(SearchForm, self).clean()
+        if 'query' in self.data:
+            title = self.data.get("query")
+            cleaned_data['title'] = title
+        else:
+            item = cleaned_data.get('search_item')
+            if item == 'thread':
+                title = cleaned_data.get('title')
+                tags = cleaned_data.get('tags')
+                username = cleaned_data.get('username')
+                if not title and not tags and not username:
+                    raise forms.ValidationError('empty form')
+            elif item == 'user':
+                username = cleaned_data.get('username')
+                if not username:
+                    raise forms.ValidationError('username is a required field')
+            else:
+                raise forms.ValidationError('item field error')
+        return cleaned_data

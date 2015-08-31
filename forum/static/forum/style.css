@@ -1,3 +1,12 @@
+.search{
+    text-shadow: none;
+}
+
+.search-btn{
+    font-size: 12px;
+    height: 34px;
+}
+
 .boards, .no-boards{
     background-color: #ffe89c;
     padding-left: 25px;
@@ -13,7 +22,7 @@
     background-color: #ffd75a;
 }
 
-.pagination>.active>a{
+.pagination>.active>a, .pagination>.active>a:hover{
     background-color: #ff9900;
     border-color: #ff9900;
 }
@@ -132,3 +141,4 @@
 .mod-list-item{
     margin-bottom: 15px;
 }
+

@@ -1,6 +1,6 @@
-{%  extends 'forum/base.html' %}
-{%  load staticfiles %}
-{%  block titlesection %}- Forum - {{ board.name }}{%  endblock %}
+{% extends 'forum/base.html' %}
+{% load staticfiles %}
+{% block titlesection %}- Forum - search{%  endblock %}
 {% block menu_per_page %}
     {% if request.user.is_authenticated %}
         <li><a href='{% url 'forum:create_thread' %}' class="navbar-link">New Thread</a></li>
@@ -10,31 +10,23 @@
     <script src="{% static 'forum/js/localTime.js' %}"></script>
     {%  if errors %}
         <div class="alert alert-danger">
-            <strong>ERROR:</strong> {% for error in errors %}{{error}}{% endfor %}
+            {% for error in errors %}{{error}}{% endfor %}
         </div>
     {%  endif %}
-    <a href="{%  url 'forum:board' board.code none %}" id="board">
+    <a id="board">
         <div class="well well-sm boards lead">
             <div class="row">
                 <div class="col-xs-10">
-                    <span class="glyphicon glyphicon-list-alt"></span> {{ board.name }}
+                    <span class="glyphicon glyphicon-search"></span> search: {{ search }}
                 </div>
-                <div class="col-xs-2 text-right">
-                    {% if board in request.user.modded_boards%}
-                        <span class="glyphicon glyphicon-knight" title="modded" id="modded"></span>
-                    {% elif request.user.is_superuser %}
-                        <span class="glyphicon glyphicon-king" title="supermodded" id="modded"></span>
-                    {% elif request.user.is_supermod %}
-                        <span class="glyphicon glyphicon-queen" title="supermodded" id="modded"></span>
-                    {% endif %}
-                </div>
+                <div class="col-xs-2"></div>
             </div>
         </div>
     </a>
     <div class="row">
         <div class="col-md-1 hidden-xs"></div>
         <div class="col-md-11 col-xs-12">
-            {% if board.thread_set.all %}
+            {% if threads %}
                 <table class="table">
                     <thead>
                         <tr>
@@ -44,7 +36,7 @@
                             <th id="last">Last Post</th>
                         </tr>
                     </thead>
-                    {% for thread in thread_set %}
+                    {% for thread in threads %}
                         {% if thread.last_post %}
                             <tr>
                                 <td id="thread">
@@ -66,14 +58,14 @@
             {% endif %}
         </div>
     </div>
-{% if thread_set.has_other_pages %}
+{% if threads.has_other_pages %}
     <div class="row text-center">
         <ul class="pagination">
-            {% for page in thread_set.paginator.page_range %}
-                {% if page == thread_set.number %}
-                    <li class="active"><a href="{%  url "forum:board" board.code page %}">{{ page }}</a></li>
+            {% for page in threads.paginator.page_range %}
+                {% if page == threads.number %}
+                    <li class="active"><a href="{% url 'forum:search' page %}">{{ page }}</a></li>
                 {% else %}
-                    <li><a href="{% url "forum:board" board.code page %}">{{ page }}</a></li>
+                    <li><a href="{% url 'forum:search' page %}">{{ page }}</a></li>
                 {% endif %}
             {% endfor %}
         </ul>

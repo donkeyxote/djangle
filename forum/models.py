@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.forms import FileInput
 from django.utils import timezone, six
 from django.core.exceptions import ValidationError
 from djangle.settings import ELEM_PER_PAGE
@@ -28,6 +27,7 @@ class Board(models.Model):
     def create(cls, name, code):
         """
         method for board creation
+
         :param name: name for the new board
         :param code: code for the new board
         :return: the new board
@@ -52,6 +52,7 @@ class Board(models.Model):
     def get_latest(self, num=None):
         """
         get board's thread ordered by last comment publish date
+
         :param num: number of threads to return (optional: default all)
         :return: list of threads
         """
@@ -70,6 +71,7 @@ class Board(models.Model):
     def get_new(self, num=5):
         """
         get board's thread ordered by last comment publish date (alias of get_latest for templates)
+
         :param num: number of threads to return (optional: default 5)
         :return: list of threads
         """
@@ -80,6 +82,7 @@ class Board(models.Model):
     def __str__(self):
         """
         redefine id field to be name
+
         :return: board name
         """
         return self.name
@@ -92,12 +95,18 @@ class User(AbstractUser):
     class user is used to collect information of forum's users like avatar, reputation, number of posts, number of
     threads, email, username, password (hash is used for storage). this is also used for django authentication system.
     """
+    @staticmethod
+    def validate_image(obj):
+        """
+        validator for avatar field, check that file loaded is not bigger than kilobyte_limit
 
-    def validate_image(fieldfile_obj):
-        file_size = fieldfile_obj.file.size
+        :param obj: the file to be validate
+        :return: raise validation error if file is too big
+        """
+        file_size = obj.file.size
         kilobyte_limit = 200
-        if file_size > kilobyte_limit*1024:
-            raise ValidationError("Max file size is %sKB" % str(kilobyte_limit), fieldfile_obj.file)
+        if file_size > kilobyte_limit * 1024:
+            raise ValidationError("Max file size is %sKB" % str(kilobyte_limit), obj.file)
 
     models.EmailField.unique = True
     rep = models.IntegerField(default=0)
@@ -110,6 +119,7 @@ class User(AbstractUser):
     def image_tag(self):
         """
         permits the visualization of the user avatar in django admin
+
         :return: html code
         """
         return u'<img src="%s" />' % self.avatar.url
@@ -119,6 +129,7 @@ class User(AbstractUser):
     def num_threads(self):
         """
         return the number of threads
+
         :return: number of threads
         """
         return Thread.objects.filter(first_post__author=self).count()
@@ -126,6 +137,7 @@ class User(AbstractUser):
     def reset_avatar(self):
         """
         set profile picture to default
+
         :return: nothing
         """
         if not self.avatar.name.endswith('Djangle_user_default.png'):
@@ -140,6 +152,7 @@ class User(AbstractUser):
     def subscribed_threads(self):
         """
         return a list of thread subscribed by user
+
         :return: subscribed threads list
         """
         threads = []
@@ -149,7 +162,8 @@ class User(AbstractUser):
 
     def modded_boards(self):
         """
-        return a list of board bodded by the user
+        return a list of board modded by the user
+
         :return: list of modded board
         """
         boards = []
@@ -162,6 +176,7 @@ class User(AbstractUser):
         toggle supermod status
 
         insert or remove user from supermod group
+
         :param do_set: True to insert, False to remove (default True)
         :return: nothing
         """
@@ -185,6 +200,7 @@ class User(AbstractUser):
     def is_supermod(self):
         """
         return whether user is supermod
+
         :return: True if user is supermod, else False
         """
         if self.groups.filter(name='supermod').exists() or self.is_superuser:
@@ -195,6 +211,7 @@ class User(AbstractUser):
     def is_mod(self):
         """
         return whether user is moderator
+
         :return: True if user is moderator, else False
         """
         if self.moderation_set.all().exists():
@@ -205,6 +222,7 @@ class User(AbstractUser):
     def is_banned(self):
         """
         return whether user is banned
+
         :return: True if user is banned, else False
         """
         for ban in Ban.objects.filter(user=self):
@@ -230,6 +248,7 @@ class Post(models.Model):
     def __str__(self):
         """
         redefine id field to return first 50 characters of post
+
         :return: string containing first 50 characters of post
         """
         return self.message[:50]
@@ -241,6 +260,7 @@ class Post(models.Model):
     def create(cls, message, thread, author):
         """
         method for post creation
+
         :param message: the actual post's message
         :param thread: the thread associated with the post
         :param author: the post's author
@@ -273,6 +293,7 @@ class Post(models.Model):
     def remove(self):
         """
         method for removing a post
+
         :return:nothing
         """
         self.author.posts -= 1
@@ -283,6 +304,7 @@ class Post(models.Model):
     def get_page(self):
         """
         method for getting post's page number in thread's posts list
+
         :return: page number
         """
         older = self.thread.post_set.filter(pub_date__lte=self.pub_date).count()
@@ -314,6 +336,7 @@ class Thread(models.Model):
     def __str__(self):
         """
         redefine id field to return first 50 characters of title
+
         :return: first 50 characters of title
         """
         return self.title[:50]
@@ -321,6 +344,7 @@ class Thread(models.Model):
     def last_post(self):
         """
         return lats post added to thread
+
         :return: last post added
         """
         return self.post_set.last()
@@ -329,13 +353,14 @@ class Thread(models.Model):
     def create(cls, title, message, board, author, tag1=None, tag2=None, tag3=None):
         """
         method for new threads creation
+
         :param title: thread title
         :param message: first post's message
         :param board: board associated with thread
         :param author: author of thread
-        :param tag1: string tag for indexing threads (not used yet)
-        :param tag2: string tag for indexing threads (not used yet)
-        :param tag3: string tag for indexing threads (not used yet)
+        :param tag1: string tag for indexing threads
+        :param tag2: string tag for indexing threads
+        :param tag3: string tag for indexing threads
         :return: the new thread
         """
         if not (isinstance(title, six.string_types)):
@@ -373,6 +398,7 @@ class Thread(models.Model):
     def remove(self):
         """
         method for thread deletion
+
         :return: nothing
         """
         for post in self.post_set.all():
@@ -383,6 +409,7 @@ class Thread(models.Model):
     def sub_users(self):
         """
         return a list of user who subscribed the thread
+
         :return: list of subscribers
         """
         users = []
@@ -393,6 +420,7 @@ class Thread(models.Model):
     def is_closed(self):
         """
         return whether close date is previous to timezone.now()
+
         :return: True if close_date < now, else False
         """
         now = timezone.now()
@@ -403,6 +431,7 @@ class Thread(models.Model):
     def get_tags(self):
         """
         returns threads' tags list
+
         :return: list of tags
         """
         tags = []
@@ -413,7 +442,6 @@ class Thread(models.Model):
         if self.tag3:
             tags.append(self.tag3)
         return tags
-
 
 
 class Subscription(models.Model):
@@ -436,6 +464,7 @@ class Subscription(models.Model):
     def is_expired(self, time=timezone.now()):
         """
         method to know if sync_interval has passed since last mail notification and there are new posts
+
         :param time: date to check (optional, default now)
         :return: True if subscription is expired, else False
         """
@@ -449,6 +478,7 @@ class Subscription(models.Model):
     def create(cls, thread, user, async, sync_interval=None, last_sync='default', active=True):
         """
         method for new subscriptions creation
+
         :param thread: the thread to subscribe
         :param user: the subscriber user
         :param async: True for asynchronous notification, else False
@@ -507,6 +537,7 @@ class Vote(models.Model):
         method for new votes creation
 
         this ensures posts' and users' static attributes to be updated whenever a vote is created or changed
+
         :param post: voting user
         :param user: voted post
         :param value: vote value (True for positive, False for negative)
@@ -580,6 +611,7 @@ class Ban(models.Model):
     def is_active(self):
         """
         method to know is ban is valid or expired
+
         :return: True if ban is active, else False
         """
         if self.duration is None or self.start + self.duration >= timezone.now():
@@ -590,6 +622,7 @@ class Ban(models.Model):
     def remove(self):
         """
         method for removing bans
+
         :return: nothing
         """
         self.user.is_active = True
