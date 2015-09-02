@@ -242,12 +242,12 @@ def del_post(request, post_pk):
             request.user.is_supermod():
         if post.thread.first_post == post:
             thread = post.thread
-            del_mail(thread.first_post, thread)
+            del_mail.delay(thread.first_post, thread)
             thread.remove()
             return HttpResponseRedirect(reverse('forum:board', kwargs={'board_code': thread.board.code, 'page': ''}))
         else:
             redirect_to = request.GET.get('next', '')
-            del_mail(post)
+            del_mail.delay(post)
             post.remove()
             return HttpResponseRedirect(redirect_to)
     raise PermissionError

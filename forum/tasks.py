@@ -149,7 +149,7 @@ def check_ban():
     for ban in Ban.objects.all():
         if not ban.is_active():
             ban.remove()
-            ban_remove_mail(ban.user)
+            ban_remove_mail.delay(ban.user)
 
 
 @app.task

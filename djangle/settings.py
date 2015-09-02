@@ -144,12 +144,12 @@ ELEM_PER_PAGE = 20
 BROKER_URL = 'django://'
 
 CELERYBEAT_SCHEDULE = {
-    'add-every-30-seconds': {
+    'async_subscriptions': {
         'task': 'forum.tasks.async_mail',
-        'schedule': timedelta(seconds=30),
+        'schedule': timedelta(minutes=15),
     },
     'check_ban': {
         'task': 'forum.tasks.check_ban',
-        'schedule': timedelta(seconds=30)
+        'schedule': timedelta(hours=6)
     }
 }
