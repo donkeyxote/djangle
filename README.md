@@ -23,15 +23,14 @@
 move to project directory
 
     $ cd /path/to/djangle
-    
-make migrations for forum app
+ke migrations for forum app
 
     $ python3 manage.py makemigrations forum
-    
+
 synchronize the database state with the current set of models
 
     $ python3 manage.py migrate
-    
+
 create a superuser for Django admin
 
     $ python3 manage.py createsuperuser
@@ -39,7 +38,7 @@ create a superuser for Django admin
 let the show begin
 
     $ python3 manage.py runserver
-    
+
 ## instructions for mail and self-removal ban services:
 
 **big fat warning:**

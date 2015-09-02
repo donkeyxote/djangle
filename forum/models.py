@@ -95,7 +95,6 @@ class User(AbstractUser):
     class user is used to collect information of forum's users like avatar, reputation, number of posts, number of
     threads, email, username, password (hash is used for storage). this is also used for django authentication system.
     """
-    @staticmethod
     def validate_image(obj):
         """
         validator for avatar field, check that file loaded is not bigger than kilobyte_limit
@@ -111,7 +110,7 @@ class User(AbstractUser):
     models.EmailField.unique = True
     rep = models.IntegerField(default=0)
     avatar = models.ImageField(upload_to='prof_pic',
-                               default='prof_pic/Djangle_user_default.png',
+                               default=os.path.join('prof_pic', 'Djangle_user_default.png'),
                                validators=[validate_image])
     posts = models.PositiveIntegerField(default=0)
     threads = models.PositiveIntegerField(default=0)
@@ -146,8 +145,9 @@ class User(AbstractUser):
                 os.remove(img)
             except:
                 pass
-            self.avatar = 'prof_pic/Djangle_user_default.png'
+            self.avatar = os.path.join('prof_pic', 'Djangle_user_default.png')
             self.save()
+
 
     def subscribed_threads(self):
         """

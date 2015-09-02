@@ -100,8 +100,8 @@ def thread_view(request, thread_pk, page):
                 errors.append(str(error))
                 return render(request, 'errors.html', {'errors': errors})
             return HttpResponseRedirect(reverse('forum:thread',
-                                                kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages})
-                                        + '#bottom')
+                                                kwargs={'thread_pk': thread_pk, 'page': paginator.num_pages}) +
+                                        '#bottom')
     else:
         form = PostForm()
     try:
@@ -286,10 +286,13 @@ def edit_profile(request):
                 extension = image.name.rsplit('.', 1)[1]
                 if extension in ('jpg', 'jpeg', 'gif', 'png'):
                     image.name = request.user.username + '.' + extension
+                    image.name = request.user.username + '.' + extension
                     if not request.user.avatar.name.endswith('Djangle_user_default.png'):
                         img_del = request.user.avatar.path
                         try:
                             os.remove(img_del)
+                        except FileNotFoundError:
+                            pass
                         except Exception as error:
                             errors.append(str(error))
                             return render(request, 'errors.html', {'errors': errors})
@@ -297,8 +300,8 @@ def edit_profile(request):
                     request.user.save()
                 else:
                     errors.append('image must end with .jpg, .jpeg, .gif or .png')
-    else:
-        form = UserEditForm()
+
+    form = UserEditForm()
     return render(request, 'forum/profile_edit.html', {'form': form, 'user': request.user, 'errors': errors})
 
 
@@ -322,7 +325,8 @@ def reset_user_field(request, field):
         request.user.save()
     elif field == 'avatar':
         request.user.reset_avatar()
-    return render(request, 'forum/profile_edit.html')
+    form = UserEditForm()
+    return render(request, 'forum/profile_edit.html', {'form': form, 'user': request.user})
 
 
 @login_required
@@ -711,7 +715,8 @@ def search(request, page):
                 threads = paginator.page(1)
             except EmptyPage:
                 threads = paginator.page(paginator.num_pages)
-        return render(request, 'forum/search_threads.html', {'search': search_message, 'threads': threads, 'page': page})
+        return render(request, 'forum/search_threads.html',
+                      {'search': search_message, 'threads': threads, 'page': page})
     return render(request, 'forum/create.html', {'forms': [form], 'object': 'search'})
 
 

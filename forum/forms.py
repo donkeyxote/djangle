@@ -1,7 +1,7 @@
 """
 module for forum's forms
 """
-
+import os
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import Post, Board, Thread, User, Ban
@@ -72,7 +72,7 @@ class UserEditForm(forms.ModelForm):
                     self._errors['avatar'] = "image format not supported"
                     raise ValidationError("image format not supported")
             except AttributeError:
-                if avatar != 'prof_pic/Djangle_user_default.png':
+                if avatar != os.path.join('prof_pic', 'Djangle_user_default.png'):
                     self._errors['avatar'] = "image format not supported"
                     raise ValidationError("image format not supported")
 

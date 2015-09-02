@@ -1,5 +1,6 @@
 {% extends 'forum/base.html' %}
 {% load staticfiles %}
+{% load forum_extra %}
 {% block titlesection %}- Forum - search{%  endblock %}
 {% block menu_per_page %}
     {% if request.user.is_authenticated %}
@@ -29,7 +30,7 @@
             {% if users %}
                 {% for user in users %}
                     <div class="mod-list-item">
-                        <a href="{% url 'forum:profile' user.username %}"><img src="{{ user.avatar.url }}" class="img-circle" width="30" height="30"></a>
+                        <a href="{% url 'forum:profile' user.username %}"><img src="{{ user.avatar.url|file_exists }}" class="img-circle" width="30" height="30"></a>
                         <a href="{% url 'forum:profile' user.username %} " class="lead">{{ user.username }}</a>
                         <a href="{% url 'forum:profile' user.username %} " class="lead">{{ user.first_name }}</a>
                         <a href="{% url 'forum:profile' user.username %} " class="lead">{{ user.last_name}}</a>

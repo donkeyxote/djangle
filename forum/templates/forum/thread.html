@@ -1,5 +1,6 @@
 {% extends 'forum/base.html' %}
 {% load staticfiles %}
+{% load forum_extra %}
 {% load crispy_forms_tags %}
 {% block titlesection %}- Forum - {{ thread }}{%  endblock %}
 {% block menuleft %}
@@ -45,7 +46,7 @@
                 <div class="col-sm-2">
                     <div class="row">
                     <div class="col-xs-6 col-sm-12">
-                        <a href="{% url 'forum:profile' post.author.username %}"><img src="{{ post.author.avatar.url }}" class="img-thumbnail"></a><br/>
+                        <a href="{% url 'forum:profile' post.author.username %}"><img src="{{ post.author.avatar.url|file_exists }}" class="img-thumbnail"></a><br/>
                     </div>
                     <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
                         <a href='{% url 'forum:profile' post.author.username %}' title="User"><span class="glyphicon glyphicon-user"></span> {{ post.author }}</a><br/>
@@ -129,7 +130,7 @@
                 <div class="col-sm-2">
                     <div class="row">
                         <div class="col-xs-6 col-sm-12">
-                            <a href="{% url 'forum:profile' request.user.username %}"><img src="{{ request.user.avatar.url }}" class="img-thumbnail"></a><br/>
+                            <a href="{% url 'forum:profile' request.user.username %}"><img src="{{ request.user.avatar.url|file_exists }}" class="img-thumbnail"></a><br/>
                         </div>
                         <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
                             <a href='{% url 'forum:profile' request.user.username %}' title="User"><span class="glyphicon glyphicon-user"></span> {{ request.user }}</a><br/>
