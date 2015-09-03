@@ -15,10 +15,10 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 
 from .decorators import user_passes_test_with_403
-from .models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban
-from .tasks import sync_mail, del_mail, ban_create_mail, ban_remove_mail
+from .models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban, Comment
+from .tasks import sync_mail, del_mail, ban_create_mail, ban_remove_mail, del_comment_mail
 from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm, \
-    BoardModForm, SearchForm
+    BoardModForm, SearchForm, CommentForm
 
 from djangle.settings import ELEM_PER_PAGE
 
@@ -104,13 +104,15 @@ def thread_view(request, thread_pk, page):
                                         '#bottom')
     else:
         form = PostForm()
+        comment_form = CommentForm()
     try:
         post_list = paginator.page(page)
     except PageNotAnInteger:
         post_list = paginator.page(1)
     except EmptyPage:
         post_list = paginator.page(paginator.num_pages)
-    return render(request, 'forum/thread.html', {'thread': thread, 'posts': post_list, 'form': form})
+    return render(request, 'forum/thread.html', {'thread': thread, 'posts': post_list,
+                                                 'form': form, 'comment_form': comment_form})
 
 
 @user_passes_test_with_403(lambda u: u.is_supermod())
@@ -254,6 +256,32 @@ def del_post(request, post_pk):
 
 
 @login_required
+def comment(request, post_pk):
+    post = get_object_or_404(Post, pk=post_pk)
+    form = CommentForm(request.POST)
+    if form.is_valid():
+        message = form.cleaned_data['message']
+        Comment.create(message=message, author=request.user, post=post)
+    else:
+        return render(request, 'errors.html', {'errors': form.fields['message'].error_messages})
+    return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': post.thread.pk,
+                                                                'page': post.get_page()})+'#'+post_pk)
+
+
+@login_required
+def del_comment(request, comment_pk):
+    comment = get_object_or_404(Comment, pk=comment_pk)
+    if (request.user.username == comment.author.username) or\
+            request.user.moderation_set.filter(board=comment.post.thread.board).exists() or\
+            request.user.is_supermod():
+        del_comment_mail.delay(comment)
+        comment.delete()
+        redirect_to = request.GET.get('next', '')
+        return HttpResponseRedirect(redirect_to)
+    raise PermissionError
+
+
+@login_required
 def edit_profile(request):
     """
     view for change user's info
@@ -325,9 +353,7 @@ def reset_user_field(request, field):
         request.user.save()
     elif field == 'avatar':
         request.user.reset_avatar()
-    form = UserEditForm()
-    return render(request, 'forum/profile_edit.html', {'form': form, 'user': request.user})
-
+    return HttpResponseRedirect(reverse('forum:edit_profile'))
 
 @login_required
 def subscribe(request, thread_pk):

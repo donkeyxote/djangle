@@ -148,7 +148,6 @@ class User(AbstractUser):
             self.avatar = os.path.join('prof_pic', 'Djangle_user_default.png')
             self.save()
 
-
     def subscribed_threads(self):
         """
         return a list of thread subscribed by user
@@ -312,6 +311,49 @@ class Post(models.Model):
         if older % ELEM_PER_PAGE == 0:
             return pages
         return pages + 1
+
+
+class Comment(models.Model):
+    """
+    a comment to a message
+
+    abstraction of a comment. it has a message, an author, a publish date and a related post
+    """
+    post = models.ForeignKey(Post)
+    message = models.CharField(max_length=5000)
+    pub_date = models.DateTimeField('publication date')
+    author = models.ForeignKey(User)
+
+    @classmethod
+    def create(cls, message, post, author):
+        """
+        method for comment creation
+
+        :param message: the actual comment's message
+        :param thread: the post associated with the comment
+        :param author: the comment's author
+        :return: the created comment
+        """
+        if not (isinstance(message, six.string_types)):
+            raise TypeError("message is not a string instance")
+        if not (isinstance(post, Post)):
+            raise TypeError("post is not a Post instance")
+        if not (isinstance(author, User)):
+            raise TypeError("author is not an User instance")
+        if not author.is_active:
+            raise ValueError("author is not an active user")
+        if not len(message) <= 5000:
+            raise ValueError("message too long")
+
+        pub_date = timezone.now()
+        try:
+            comment = cls(message=message, pub_date=pub_date, post=post, author=author)
+            comment.save()
+        except Exception as e:
+            raise e
+        return comment
+
+
 
 
 class Thread(models.Model):

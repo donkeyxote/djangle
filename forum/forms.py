@@ -4,7 +4,7 @@ module for forum's forms
 import os
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Post, Board, Thread, User, Ban
+from .models import Post, Board, Thread, User, Ban, Comment
 from datetime import timedelta
 
 
@@ -15,6 +15,18 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
+        widgets = {
+            'message': forms.Textarea
+        }
+        fields = ['message']
+
+class CommentForm(forms.ModelForm):
+    """
+    form for comment creation
+    """
+
+    class Meta:
+        model = Comment
         widgets = {
             'message': forms.Textarea
         }

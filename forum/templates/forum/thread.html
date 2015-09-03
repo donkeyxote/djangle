@@ -8,7 +8,7 @@
     <li><a href="{% url 'forum:board' thread.board.code '' %}" class="navbar-link">{{ thread.board.name }}</a></li>{% endblock %}
 {% block menu_per_page %}
     {% if request.user.is_authenticated %}
-        <li><a href='{% url 'forum:create_thread' %}' class="navbar-link">New Thread</a></li>
+        <li><a href="{% url 'forum:create_thread' %}" class="navbar-link">New Thread</a></li>
     {% endif %}
 {% endblock %}
 {% block mod_menu %}
@@ -41,27 +41,28 @@
             {% endif %}
         </div>
     </div>
-        {% for post in posts %}
+    {% for post in posts %}
+        <div class="well thread-well">
             <div class="row" id="{{ post.pk }}">
                 <div class="col-sm-2">
                     <div class="row">
-                    <div class="col-xs-6 col-sm-12">
-                        <a href="{% url 'forum:profile' post.author.username %}"><img src="{{ post.author.avatar.url|file_exists }}" class="img-thumbnail"></a><br/>
-                    </div>
-                    <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
-                        <a href='{% url 'forum:profile' post.author.username %}' title="User"><span class="glyphicon glyphicon-user"></span> {{ post.author }}</a><br/>
-                        <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ post.author.rep }}</a><br/>
-                        <a title="Posts"><span class="glyphicon glyphicon-comment"></span> {{ post.author.posts }}</a><br/>
-                        {% if post.author.is_superuser %}
-                            <span class="glyphicon glyphicon-king"></span> admin<br/>
-                        {% elif post.author.is_supermod %}
-                            <span class="glyphicon glyphicon-queen"></span> supermod<br/>
-                        {% elif thread.board in post.author.modded_boards %}
-                            <span class="glyphicon glyphicon-knight"></span> moderator<br/>
-                        {% else %}
-                            <span class="glyphicon glyphicon-pawn"></span> user<br/>
-                        {% endif %}
-                    </div>
+                        <div class="col-xs-6 col-sm-12">
+                            <a href="{% url 'forum:profile' post.author.username %}"><img src="{{ post.author.avatar.url|file_exists }}" class="img-thumbnail"></a><br/>
+                        </div>
+                        <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
+                            <a href="{% url 'forum:profile' post.author.username %}" title="User"><span class="glyphicon glyphicon-user"></span> {{ post.author }}</a><br/>
+                            <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ post.author.rep }}</a><br/>
+                            <a title="Posts"><span class="glyphicon glyphicon-comment"></span> {{ post.author.posts }}</a><br/>
+                            {% if post.author.is_superuser %}
+                                <span class="glyphicon glyphicon-king"></span> admin<br/>
+                            {% elif post.author.is_supermod %}
+                                <span class="glyphicon glyphicon-queen"></span> supermod<br/>
+                            {% elif thread.board in post.author.modded_boards %}
+                                <span class="glyphicon glyphicon-knight"></span> moderator<br/>
+                            {% else %}
+                                <span class="glyphicon glyphicon-pawn"></span> user<br/>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 <div class="col-sm-10">
@@ -72,8 +73,12 @@
                                     <div class="col-sm-7 col-lg-9">
                                         {% if thread.board in request.user.modded_boards or request.user.is_supermod %}
                                             <a href="{% url 'forum:stick_thread' thread.pk %}">{% if thread.sticky %}<span class=" glyphicon glyphicon-pushpin glip-action" title="unstick"></span>{% else %}<span class=" glyphicon glyphicon-pushpin" title="stick" style="color:#aaa"></span>{% endif %}</a>
-                                        {% elif thread.sticky %}<span class=" glyphicon glyphicon-pushpin" title="sticky"></span>{% endif %}
-                                        {% if thread.is_closed %}<span class="glyphicon glyphicon-lock" title="closed"></span>{% endif %}
+                                        {% elif thread.sticky %}
+                                            <span class=" glyphicon glyphicon-pushpin" title="sticky"></span>
+                                        {% endif %}
+                                        {% if thread.is_closed %}
+                                            <span class="glyphicon glyphicon-lock" title="closed"></span>
+                                        {% endif %}
                                         <span class="lead">{{ thread.title }}</span>
                                     </div>
                                     <div class="col-sm-5 col-lg-3 text-right">
@@ -103,6 +108,7 @@
                                             <a href="{% url 'forum:del_post' post.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Do you want to delete this post?')" id="delete">Delete Post</a>
                                         {% endif %}
                                     {% endif %}
+                                    <br/>
                                     <a href="{% url 'forum:pos_vote' post.pk 'up' %}?next={{ request.get_full_path|urlencode }}#{{ post.pk }}">
                                         <span class="badge" id="pos_badge">
                                             {{ post.pos_votes }}
@@ -117,15 +123,70 @@
                             </div>
                         </div>
                     </div>
+                    {% for reply in post.comment_set.all %}
+                        <div class="row" id="reply{{ reply.pk }}">
+                            <div class="col-sm-2">
+                                <div class="row">
+                                    <div class="col-xs-6 col-sm-12">
+                                        <a href="{% url 'forum:profile' reply.author.username %}"><img src="{{ reply.author.avatar.url|file_exists }}" class="img-thumbnail"></a><br/>
+                                    </div>
+                                    <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
+                                        <a href="{% url 'forum:profile' reply.author.username %}" title="User"><span class="glyphicon glyphicon-user"></span> {{ reply.author }}</a><br/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-10">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <span class="small text-muted"><script> document.write(date("{{ reply.pub_date|date:'d M Y H:i:s' }}"))</script></span><br/>
+                                                <div>{{ reply.message|linebreaksbr }}</div>
+                                            </div>
+                                            <div class="col-sm-3 text-right">
+                                                {% if reply.author.username in request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod %}
+                                                    <a href="{% url 'forum:del_comment' reply.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Do you want to delete this comment?')" id="delete">Delete Comment</a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="row collapse comment{{ post.pk }}">
+                        <div class="col-sm-2">
+                            <div class="row">
+                                <div class="col-xs-6 col-sm-12">
+                                    <a href="{% url 'forum:profile' request.user.username %}"><img src="{{ request.user.avatar.url|file_exists }}" class="img-thumbnail"></a><br/>
+                                </div>
+                                <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
+                                    <a href="{% url 'forum:profile' request.user.username %}" title="User"><span class="glyphicon glyphicon-user"></span> {{ request.user.username }}</a><br/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-10">
+                            <form method="post" action="{% url 'forum:comment' post.pk %}">
+                                <div class="row">
+                                    {% csrf_token %}
+                                    <table>
+                                        {{ comment_form | crispy }}
+                                    </table>
+                                    <input type="submit" value="Submit" class="btn btn-default" />
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="btn btn-default" data-toggle="collapse" data-target=".comment{{ post.pk }}" aria-expanded="false" aria-controls="first-name">Reply</div>
+                    </div>
                 </div>
             </div>
+        </div>
     {% endfor %}
 
     {% if posts.number == posts.paginator.num_pages and not thread.is_closed %}
         <section id="bottom">
-
-
-
             <div class="row">
                 <div class="col-sm-2">
                     <div class="row">
@@ -133,7 +194,7 @@
                             <a href="{% url 'forum:profile' request.user.username %}"><img src="{{ request.user.avatar.url|file_exists }}" class="img-thumbnail"></a><br/>
                         </div>
                         <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
-                            <a href='{% url 'forum:profile' request.user.username %}' title="User"><span class="glyphicon glyphicon-user"></span> {{ request.user }}</a><br/>
+                            <a href="{% url 'forum:profile' request.user.username %}" title="User"><span class="glyphicon glyphicon-user"></span> {{ request.user }}</a><br/>
                             <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ request.user.rep }}</a><br/>
                             <a title="Posts"><span class="glyphicon glyphicon-comment"></span> {{ request.user.posts }}</a><br/>
                             {% if request.user.is_superuser %}

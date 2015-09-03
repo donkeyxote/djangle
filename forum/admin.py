@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.hashers import make_password
-from .models import User, Post, Thread, Board, Subscription, Moderation, Ban
+from .models import User, Post, Thread, Board, Subscription, Moderation, Ban, Comment
 
 # Register your models here.
 
@@ -203,3 +203,4 @@ admin.site.register(Board, BoardAdmin)
 admin.site.register(Subscription, SubscriptionAdmin)
 admin.site.register(Moderation, ModerationAdmin)
 admin.site.register(Ban, BanAdmin)
+admin.site.register(Comment)

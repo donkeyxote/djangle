@@ -83,6 +83,13 @@ def sync_mail(post):
 
 
 @app.task
+def del_comment_mail(comment):
+    subject = EMAIL_SUBJECT_PREFIX + 'your comment was deleted'
+    message = 'The comment:' + os.linesep + comment.message + os.linesep + 'in post: ' + comment.post.message +\
+              os.linesep + 'was deleted'
+    mail.delay(subject=subject, message=message, sender=None, receiver=[comment.author.email], fail_silently=False)
+
+@app.task
 def del_mail(post, thread=None):
     """
     procedure for post deletion notification
