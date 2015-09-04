@@ -230,20 +230,31 @@ class User(AbstractUser):
         return False
 
 
-class Post(models.Model):
+class GenericPost(models.Model):
+    """
+    Generic class for messages
+    """
+    message = models.CharField(max_length=5000)
+    pub_date = models.DateTimeField('publication date')
+    author = models.ForeignKey(User)
+    pos_votes = models.PositiveIntegerField(default=0)
+    neg_votes = models.PositiveIntegerField(default=0)
+
+
+class Post(GenericPost):
     """
     a message in a thread
 
     post is the building block of a thread. each registered and active user can write a post in a thread. a post has a
     message (the actual post), a publish date, an associated thread, number of votes (positive and negative), an author.
     """
-    message = models.CharField(max_length=5000)
-    pub_date = models.DateTimeField('publication date')
+#    message = models.CharField(max_length=5000)
+#    pub_date = models.DateTimeField('publication date')
     thread = models.ForeignKey('Thread')
-    author = models.ForeignKey(User)
-    pos_votes = models.PositiveIntegerField(default=0)
-    neg_votes = models.PositiveIntegerField(default=0)
-
+#    author = models.ForeignKey(User)
+#    pos_votes = models.PositiveIntegerField(default=0)
+#    neg_votes = models.PositiveIntegerField(default=0)
+    
     def __str__(self):
         """
         redefine id field to return first 50 characters of post
@@ -313,16 +324,16 @@ class Post(models.Model):
         return pages + 1
 
 
-class Comment(models.Model):
+class Comment(GenericPost):
     """
     a comment to a message
 
     abstraction of a comment. it has a message, an author, a publish date and a related post
     """
-    post = models.ForeignKey(Post)
-    message = models.CharField(max_length=5000)
-    pub_date = models.DateTimeField('publication date')
-    author = models.ForeignKey(User)
+    post = models.ForeignKey(Post, related_name='reply')
+#    message = models.CharField(max_length=5000)
+#    pub_date = models.DateTimeField('publication date')
+#    author = models.ForeignKey(User)
 
     @classmethod
     def create(cls, message, post, author):
@@ -566,7 +577,7 @@ class Vote(models.Model):
     vote class is used to store user's preferences about posts and to make sure an user can't vote two times for the
     same post. it has three fields: the voting user, the voted post and the value of the vote positive or negative)
     """
-    post = models.ForeignKey(Post)
+    post = models.ForeignKey(GenericPost)
     user = models.ForeignKey(User)
     value = models.BooleanField()
 

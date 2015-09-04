@@ -15,7 +15,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 
 from .decorators import user_passes_test_with_403
-from .models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban, Comment
+from .models import Board, Thread, Post, Vote, User, Subscription, Moderation, Ban, Comment, GenericPost
 from .tasks import sync_mail, del_mail, ban_create_mail, ban_remove_mail, del_comment_mail
 from .forms import PostForm, BoardForm, ThreadForm, UserEditForm, SubscribeForm, AddModeratorForm, AddBanForm, \
     BoardModForm, SearchForm, CommentForm
@@ -153,7 +153,7 @@ def vote_view(request, post_pk, vote):
     :return: redirect to updated post.
     """
     redirect_to = request.REQUEST.get('next', '')
-    post = get_object_or_404(Post, pk=post_pk)
+    post = get_object_or_404(GenericPost, pk=post_pk)
     if vote == 'up':
         Vote.vote(post=post, user=request.user, value=True)
     elif vote == 'down':
@@ -213,8 +213,8 @@ def profile(request, username):
     top_threads = []
     posts = []
     top_posts = []
-    if user.post_set.exists():
-        for post in user.post_set.all():
+    if Post.objects.filter(author=user).exists():
+        for post in Post.objects.filter(author=user):
             votes = post.pos_votes - post.neg_votes
             if post.pk == post.thread.first_post.pk:
                 threads.append((post.thread, votes))

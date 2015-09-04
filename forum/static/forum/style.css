@@ -145,3 +145,8 @@
 .thread-well{
     background-color: #e8e8e8;
 }
+
+.reply-form{
+    padding-left: 35px;
+    padding-right: 35px;
+}
