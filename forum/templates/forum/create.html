@@ -10,16 +10,16 @@
                     {{ form|crispy }}
                 {% endfor %}
             </table>
-                {% if object == 'subscription' %}
-                    <input type="submit" value="Subscribe" class="btn btn-default" />
-                    <a href="{% url 'forum:thread' thread.pk none %}" role="button" class="btn btn-default">Cancel</a>
-                {% elif object == 'moderation' %}
-                    <input type="submit" value="Confirm" class="btn btn-default" />
-                {% elif object == 'search' %}
-                    <input type="submit" value="Search" class="btn btn-default" />
-                {% else %}
-                    <input type="submit" value="Create" class="btn btn-default" />
-                {% endif %}
-            </form>
-        </section>
+            {% if object == 'subscription' %}
+                <input type="submit" value="Subscribe" class="btn btn-default" />
+                <a href="{% url 'forum:thread' thread.pk none %}" role="button" class="btn btn-default">Cancel</a>
+            {% elif object == 'moderation' %}
+                <input type="submit" value="Confirm" class="btn btn-default" />
+            {% elif object == 'search' %}
+                <input type="submit" value="Search" class="btn btn-default" />
+            {% else %}
+                <input type="submit" value="Create" class="btn btn-default" />
+            {% endif %}
+        </form>
+    </section>
 {% endblock %}

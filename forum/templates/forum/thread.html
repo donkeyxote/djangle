@@ -5,7 +5,7 @@
 {% block titlesection %}- Forum - {{ thread }}{%  endblock %}
 {% block menuleft %}
     <li><a href="{% url 'forum:index' %}" class="navbar-link">Forum</a></li>
-    <li><a href="{% url 'forum:board' thread.board.code '' %}" class="navbar-link">{{ thread.board.name }}</a></li>{% endblock %}
+{% endblock %}
 {% block menu_per_page %}
     {% if request.user.is_authenticated %}
         <li><a href="{% url 'forum:create_thread' %}" class="navbar-link">New Thread</a></li>
@@ -21,28 +21,58 @@
             <strong>ERROR:</strong> {% for error in errors %}{{error}}{% endfor %}
         </div>
     {%  endif %}
-    <div class="row">
-        <div class="col-sm-2 hidden-xs"></div>
-        <div class="col-sm-6 text-left">
-            {% if thread.get_tags %}
-                <span class="gliphycon glyphicon glyphicon-tags"></span> &nbsp;
-            {% endif %}
-            {% for tag in thread.get_tags  %}
-                <a href="{% url "forum:tag" tag none %}">{{ tag }}</a> &nbsp;
-            {% endfor %}
+    <a href="{%  url 'forum:board' thread.board.code none %}" id="board">
+        <div class="well well-sm boards lead">
+            <div class="row">
+                <div class="col-xs-10">
+                    <span class="glyphicon glyphicon-list-alt"></span> {{ thread.board.name }}
+                </div>
+                <div class="col-xs-2 text-right">
+                    {% if thread.board in request.user.modded_boards%}
+                        <span class="glyphicon glyphicon-knight" title="modded" id="modded"></span>
+                    {% elif request.user.is_superuser %}
+                        <span class="glyphicon glyphicon-king" title="supermodded" id="modded"></span>
+                    {% elif request.user.is_supermod %}
+                        <span class="glyphicon glyphicon-queen" title="supermodded" id="modded"></span>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-        <div class="col-sm-4 text-right">
-            {% if not thread.is_closed %}
-                {% if thread in request.user.subscribed_threads %}
-                    <a href="{% url 'forum:unsubscribe' thread.pk %}" class="btn btn-default subscr">Unsubscribe</a>
-                {% else %}
-                     <a href="{% url 'forum:subscribe' thread.pk %}" class="btn btn-default subscr">Subscribe</a>
-                {% endif %}
-            {% endif %}
-        </div>
-    </div>
+    </a>
     {% for post in posts %}
         <div class="well thread-well">
+        {% if post == thread.first_post %}
+            <div class="row">
+                <div class="col-sm-2 hidden-xs"></div>
+                <div class="col-sm-6 text-left">
+                    {% if thread.get_tags %}
+                        <span class="gliphycon glyphicon glyphicon-tags"></span> &nbsp;
+                    {% endif %}
+                    {% for tag in thread.get_tags  %}
+                        <span class="tag"> <a href="{% url "forum:tag" tag none %}">{{ tag }}</a> &nbsp;</span>
+                    {% endfor %}
+                </div>
+                <div class="col-sm-4 text-right">
+                    {% if post.author.username == request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod %}
+                        {% if thread.is_closed %}
+                            {% if thread.closer.username == request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod%}
+                                <a href="{% url 'forum:toggle_close_thread' thread.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to re-open this thread?')">Open</a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'forum:toggle_close_thread' thread.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to close this thread?')">Close</a>
+                        {% endif %}
+                        <a href="{% url 'forum:del_post' thread.first_post.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to delete this thread?')">Delete Thread</a>
+                    {% endif %}
+                    {% if not thread.is_closed %}
+                        {% if thread in request.user.subscribed_threads %}
+                            <a href="{% url 'forum:unsubscribe' thread.pk %}" class="btn btn-default thread_opt">Unsubscribe</a>
+                        {% else %}
+                             <a href="{% url 'forum:subscribe' thread.pk %}" class="btn btn-default thread_opt">Subscribe</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
             <div class="row" id="{{ post.pk }}">
                 <div class="col-sm-2">
                     <div class="row">
@@ -51,7 +81,7 @@
                         </div>
                         <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
                             <a href="{% url 'forum:profile' post.author.username %}" title="User"><span class="glyphicon glyphicon-user"></span> {{ post.author }}</a><br/>
-                            <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ post.author.rep }}</a><br/>
+                            <a title="Reputation"><span class="glyphicon glyphicon-star"></span> {{ post.author.rep }}</a><br/>
                             <a title="Posts"><span class="glyphicon glyphicon-comment"></span> {{ post.author.posts }}</a><br/>
                             {% if post.author.is_superuser %}
                                 <span class="glyphicon glyphicon-king"></span> admin<br/>
@@ -81,18 +111,7 @@
                                         {% endif %}
                                         <span class="lead">{{ thread.title }}</span>
                                     </div>
-                                    <div class="col-sm-5 col-lg-3 text-right">
-                                        {% if post.author.username == request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod %}
-                                            {% if thread.is_closed %}
-                                                {% if thread.closer.username == request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod%}
-                                                    <a href="{% url 'forum:toggle_close_thread' thread.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to re-open this thread?')">Open</a>
-                                                {% endif %}
-                                            {% else %}
-                                                <a href="{% url 'forum:toggle_close_thread' thread.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to close this thread?')">Close</a>
-                                            {% endif %}
-                                            <a href="{% url 'forum:del_post' thread.first_post.pk %}" class="btn btn-default thread_opt" onclick="return confirm('Do you want to delete this thread?')">Delete Thread</a>
-                                        {% endif %}
-                                    </div>
+
                                 </div>
                             </div>
                         {% endif %}
@@ -105,7 +124,7 @@
                                 <div class="col-sm-3 text-right">
                                     {% if post.author.username in request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod %}
                                         {%if post != thread.first_post %}
-                                            <a href="{% url 'forum:del_post' post.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Do you want to delete this post?')" id="delete">Delete Post</a>
+                                            <a href="{% url 'forum:del_post' post.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Do you want to delete this post?')" id="delete">Delete</a>
                                         {% endif %}
                                     {% endif %}
                                     <br/>
@@ -146,7 +165,7 @@
                                                 </div>
                                                 <div class="col-sm-3 text-right">
                                                     {% if reply.author.username in request.user.username or thread.board in request.user.modded_boards or request.user.is_supermod %}
-                                                        <a href="{% url 'forum:del_comment' reply.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Do you want to delete this comment?')" id="delete">Delete Comment</a>
+                                                        <a href="{% url 'forum:del_comment' reply.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-default" onclick="return confirm('Do you want to delete this comment?')" id="delete">Delete</a>
                                                     {% endif %}<br/>
                                                     <a href="{% url 'forum:pos_vote' reply.pk 'up' %}?next={{ request.get_full_path|urlencode }}#{{ post.pk }}">
                                                         <span class="badge" id="pos_badge">
@@ -185,7 +204,7 @@
                                         <table>
                                             {{ comment_form | crispy }}
                                         </table>
-                                        <input type="submit" value="Submit" class="btn btn-default" />
+                                        <input type="submit" value="Post reply" class="btn btn-default" />
                                     </div>
                                 </form>
                             </div>
@@ -212,7 +231,7 @@
                             </div>
                             <div class="col-xs-6 col-sm-12 text-right-xs" id="user-details">
                                 <a href="{% url 'forum:profile' request.user.username %}" title="User"><span class="glyphicon glyphicon-user"></span> {{ request.user }}</a><br/>
-                                <a title="Reputation"><span class="glyphicon glyphicon-certificate"></span> {{ request.user.rep }}</a><br/>
+                                <a title="Reputation"><span class="glyphicon glyphicon-star"></span> {{ request.user.rep }}</a><br/>
                                 <a title="Posts"><span class="glyphicon glyphicon-comment"></span> {{ request.user.posts }}</a><br/>
                                 {% if request.user.is_superuser %}
                                     <span class="glyphicon glyphicon-king"></span> admin<br/>

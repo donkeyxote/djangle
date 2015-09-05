@@ -20,6 +20,7 @@ class PostForm(forms.ModelForm):
         }
         fields = ['message']
 
+
 class CommentForm(forms.ModelForm):
     """
     form for comment creation
@@ -75,7 +76,6 @@ class UserEditForm(forms.ModelForm):
                             self._errors['avatar'] = 'file too big: max size is 200 kb'
                             raise ValidationError(
                                 self.fields['avatar'].error_messages['file too big: max size is 200 kb'])
-
                         return avatar
                     else:
                         self._errors['avatar'] = "Couldn't read uploaded image"
@@ -169,26 +169,24 @@ class SearchForm(forms.Form):
     """
     form for advanced search
     """
-    search_item = forms.ChoiceField(choices=(
-        ('thread', 'thread'),
-        ('user', 'user')
-    ), required=False)
+    search_item = forms.ChoiceField(choices=(('thread', 'thread'), ('user', 'user')), required=False,
+                                    widget=forms.RadioSelect(), initial='thread', label='')
     title = forms.CharField(max_length=50, required=False)
-    tags = forms.CharField(max_length=50, required=False)
+    tag = forms.CharField(max_length=50, required=False)
     username = forms.CharField(max_length=50, required=False)
 
     def clean(self):
         cleaned_data = super(SearchForm, self).clean()
-        if 'query' in self.data:
-            title = self.data.get("query")
+        if 'query_title' in self.data:
+            title = self.data.get("query_title")
             cleaned_data['title'] = title
         else:
             item = cleaned_data.get('search_item')
             if item == 'thread':
                 title = cleaned_data.get('title')
-                tags = cleaned_data.get('tags')
+                tag = cleaned_data.get('tags')
                 username = cleaned_data.get('username')
-                if not title and not tags and not username:
+                if not title and not tag and not username:
                     raise forms.ValidationError('empty form')
             elif item == 'user':
                 username = cleaned_data.get('username')

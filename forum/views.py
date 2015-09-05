@@ -104,13 +104,13 @@ def thread_view(request, thread_pk, page):
                                         '#bottom')
     else:
         form = PostForm()
-        comment_form = CommentForm()
     try:
         post_list = paginator.page(page)
     except PageNotAnInteger:
         post_list = paginator.page(1)
     except EmptyPage:
         post_list = paginator.page(paginator.num_pages)
+    comment_form = CommentForm()
     return render(request, 'forum/thread.html', {'thread': thread, 'posts': post_list,
                                                  'form': form, 'comment_form': comment_form})
 
@@ -143,7 +143,7 @@ def create_board(request):
 @login_required
 def vote_view(request, post_pk, vote):
     """
-    view for voting post
+    view for voting messages
 
     a simple interface for templates to function forum.models.Vote.vote
 
@@ -232,11 +232,11 @@ def del_post(request, post_pk):
     """
     view for deleting posts or threads
 
-    delete post or thread of you are author, moderator or supermoderator and send mail to author
+    delete post or thread if request.user is author, moderator or supermoderator and send mail to author
 
     :param request: the user's request
     :param post_pk: primary key of post (or first_post if deleting thread)
-    :return: render to thread on current page (or first page of board if deleting thread)
+    :return: redirect to thread view on current page (or first page of board if deleting thread)
     """
     post = get_object_or_404(Post, pk=post_pk)
     if (request.user.username == post.author.username) or\
@@ -257,6 +257,14 @@ def del_post(request, post_pk):
 
 @login_required
 def comment(request, post_pk):
+    """
+    view for comment creation
+
+    create a reply to a given post
+    :param request: the user's request
+    :param post_pk: primary key of related post
+    :return: redirect to thread view on commented post
+    """
     post = get_object_or_404(Post, pk=post_pk)
     form = CommentForm(request.POST)
     if form.is_valid():
@@ -265,17 +273,25 @@ def comment(request, post_pk):
     else:
         return render(request, 'errors.html', {'errors': form.fields['message'].error_messages})
     return HttpResponseRedirect(reverse('forum:thread', kwargs={'thread_pk': post.thread.pk,
-                                                                'page': post.get_page()})+'#'+post_pk)
+                                                                'page': post.get_page()}) + '#' + post_pk)
 
 
 @login_required
 def del_comment(request, comment_pk):
-    comment = get_object_or_404(Comment, pk=comment_pk)
-    if (request.user.username == comment.author.username) or\
-            request.user.moderation_set.filter(board=comment.post.thread.board).exists() or\
+    """
+    view for comment deletion
+
+    delete a given comment if request.user is author, moderator or supermoderator and send mail to author
+    :param request: the user's request
+    :param comment_pk: primary key of comment to delete
+    :return: redirect to thread on related post
+    """
+    comm = get_object_or_404(Comment, pk=comment_pk)
+    if (request.user.username == comm.author.username) or\
+            request.user.moderation_set.filter(board=comm.post.thread.board).exists() or\
             request.user.is_supermod():
-        del_comment_mail.delay(comment)
-        comment.delete()
+        del_comment_mail.delay(comm)
+        comm.delete()
         redirect_to = request.GET.get('next', '')
         return HttpResponseRedirect(redirect_to)
     raise PermissionError
@@ -355,6 +371,7 @@ def reset_user_field(request, field):
         request.user.reset_avatar()
     return HttpResponseRedirect(reverse('forum:edit_profile'))
 
+
 @login_required
 def subscribe(request, thread_pk):
     """
@@ -412,7 +429,7 @@ def toggle_close_thread(request, thread_pk):
     """
     view for closing/opening threads
 
-    mark thread as closed/open if user is author, moderator or supermoderator and disable new posts
+    mark thread as closed/open if request.user is author, moderator or supermoderator and disable new posts
 
     :param request: the user's request
     :param thread_pk: primary key of thread to close
@@ -436,7 +453,7 @@ def manage_user_mod(request, user_pk):
     """
     view for managing moderation for user
 
-    display form for selecting which boards user can moderate
+    display form for selecting which boards an user can moderate
 
     :param request: the user's request
     :param user_pk: primary key of user to manage
@@ -708,7 +725,7 @@ def search(request, page):
                     users = paginator.page(paginator.num_pages)
                 return render(request,
                               'forum/search_users.html',
-                              {'search': 'Username = ' + username, 'users': users, 'page': page})
+                              {'search': 'Username : ' + username, 'users': users, 'page': page})
         else:
             if not (form.cleaned_data['title'] or form.cleaned_data['tags'] or form.cleaned_data['username']):
                 return render(request, 'forum/search_threads.html', {'search': search_message,
@@ -719,15 +736,15 @@ def search(request, page):
             if form.cleaned_data['title']:
                 title = form.cleaned_data['title']
                 threads = threads.filter(title__icontains=title)
-                search_message = 'Title = ' + title
-            if form.cleaned_data['tags']:
-                tags = form.cleaned_data['tags']
+                search_message = 'Title : ' + title
+            if form.cleaned_data['tag']:
+                tags = form.cleaned_data['tag']
                 threads = threads.filter(Q(tag1__icontains=tags) | Q(tag2__icontains=tags) | Q(tag3__icontains=tags))
-                search_message += ' Tag = ' + tags
+                search_message += ' Tag : ' + tags
             if form.cleaned_data['username']:
                 username = form.cleaned_data['username']
                 threads = threads.filter(first_post__author__username__icontains=username)
-                search_message += ' Author = ' + username
+                search_message += ' Author : ' + username
             posts = []
             for thread in threads:
                 if thread.last_post() is not None:

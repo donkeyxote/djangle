@@ -51,7 +51,7 @@ class Board(models.Model):
 
     def get_latest(self, num=None):
         """
-        get board's thread ordered by last comment publish date
+        get board's thread ordered by last post publish date
 
         :param num: number of threads to return (optional: default all)
         :return: list of threads
@@ -70,7 +70,7 @@ class Board(models.Model):
 
     def get_new(self, num=5):
         """
-        get board's thread ordered by last comment publish date (alias of get_latest for templates)
+        get board's thread ordered by last post publish date (alias of get_latest for templates)
 
         :param num: number of threads to return (optional: default 5)
         :return: list of threads
@@ -95,35 +95,24 @@ class User(AbstractUser):
     class user is used to collect information of forum's users like avatar, reputation, number of posts, number of
     threads, email, username, password (hash is used for storage). this is also used for django authentication system.
     """
-    def validate_image(obj):
+    def validate_image(self):
         """
         validator for avatar field, check that file loaded is not bigger than kilobyte_limit
 
-        :param obj: the file to be validate
         :return: raise validation error if file is too big
         """
-        file_size = obj.file.size
+        file_size = self.file.size
         kilobyte_limit = 200
         if file_size > kilobyte_limit * 1024:
-            raise ValidationError("Max file size is %sKB" % str(kilobyte_limit), obj.file)
+            raise ValidationError("Max file size is %sKB" % str(kilobyte_limit), self.file)
 
     models.EmailField.unique = True
-    rep = models.IntegerField(default=0)
+    rep = models.IntegerField(default=0, verbose_name='reputation')
     avatar = models.ImageField(upload_to='prof_pic',
                                default=os.path.join('prof_pic', 'Djangle_user_default.png'),
                                validators=[validate_image])
     posts = models.PositiveIntegerField(default=0)
     threads = models.PositiveIntegerField(default=0)
-
-    def image_tag(self):
-        """
-        permits the visualization of the user avatar in django admin
-
-        :return: html code
-        """
-        return u'<img src="%s" />' % self.avatar.url
-    image_tag.short_description = 'Current avatar'
-    image_tag.allow_tags = True
 
     def num_threads(self):
         """
@@ -233,6 +222,9 @@ class User(AbstractUser):
 class GenericPost(models.Model):
     """
     Generic class for messages
+
+    a generic message instance. it has a message content, a publish date, number of votes (positive and negative),
+    an author.
     """
     message = models.CharField(max_length=5000)
     pub_date = models.DateTimeField('publication date')
@@ -240,28 +232,23 @@ class GenericPost(models.Model):
     pos_votes = models.PositiveIntegerField(default=0)
     neg_votes = models.PositiveIntegerField(default=0)
 
+    def __str__(self):
+        """
+        redefine id field to return first 50 characters of message
+
+        :return: string containing first 50 characters of message
+        """
+        return self.message[:50]
+
 
 class Post(GenericPost):
     """
     a message in a thread
 
-    post is the building block of a thread. each registered and active user can write a post in a thread. a post has a
-    message (the actual post), a publish date, an associated thread, number of votes (positive and negative), an author.
+    post is the building block of a thread. each registered and active user can write a post in a thread. inherits all
+    fields from GenericPost, moreover it has a related thread
     """
-#    message = models.CharField(max_length=5000)
-#    pub_date = models.DateTimeField('publication date')
     thread = models.ForeignKey('Thread')
-#    author = models.ForeignKey(User)
-#    pos_votes = models.PositiveIntegerField(default=0)
-#    neg_votes = models.PositiveIntegerField(default=0)
-    
-    def __str__(self):
-        """
-        redefine id field to return first 50 characters of post
-
-        :return: string containing first 50 characters of post
-        """
-        return self.message[:50]
 
     class Meta:
         get_latest_by = 'pub_date'
@@ -326,14 +313,11 @@ class Post(GenericPost):
 
 class Comment(GenericPost):
     """
-    a comment to a message
+    a comment to a post
 
-    abstraction of a comment. it has a message, an author, a publish date and a related post
+    reply to a post. inherits all fields from GenericPost, moreover it has a related post
     """
     post = models.ForeignKey(Post, related_name='reply')
-#    message = models.CharField(max_length=5000)
-#    pub_date = models.DateTimeField('publication date')
-#    author = models.ForeignKey(User)
 
     @classmethod
     def create(cls, message, post, author):
@@ -341,7 +325,7 @@ class Comment(GenericPost):
         method for comment creation
 
         :param message: the actual comment's message
-        :param thread: the post associated with the comment
+        :param post: the post associated with the comment
         :param author: the comment's author
         :return: the created comment
         """
@@ -363,8 +347,6 @@ class Comment(GenericPost):
         except Exception as e:
             raise e
         return comment
-
-
 
 
 class Thread(models.Model):
@@ -572,10 +554,11 @@ class Subscription(models.Model):
 
 class Vote(models.Model):
     """
-    a vote for a post/thread
+    a vote for a message/thread
 
-    vote class is used to store user's preferences about posts and to make sure an user can't vote two times for the
-    same post. it has three fields: the voting user, the voted post and the value of the vote positive or negative)
+    vote class is used to store user's preferences about messages and to make sure an user can't vote two times for the
+    same message. it has three fields: the voting user, the voted message and the value of the vote (positive or
+    negative)
     """
     post = models.ForeignKey(GenericPost)
     user = models.ForeignKey(User)
@@ -591,8 +574,8 @@ class Vote(models.Model):
 
         this ensures posts' and users' static attributes to be updated whenever a vote is created or changed
 
-        :param post: voting user
-        :param user: voted post
+        :param post: voted message
+        :param user: voting user
         :param value: vote value (True for positive, False for negative)
         :return: the new vote
         """
@@ -663,7 +646,7 @@ class Ban(models.Model):
 
     def is_active(self):
         """
-        method to know is ban is valid or expired
+        method to know if ban is valid or expired
 
         :return: True if ban is active, else False
         """
@@ -688,7 +671,7 @@ class Moderation(models.Model):
     moderation relation between an user and a board
 
     moderation class is used to express that an user has particular permissions over a board, like closing threads,
-    deleting posts or banning users (globally)
+    deleting messages or banning users (globally)
     """
     user = models.ForeignKey(User)
     board = models.ForeignKey(Board)

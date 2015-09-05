@@ -18,7 +18,7 @@
         <div class="well well-sm boards lead">
             <div class="row">
                 <div class="col-xs-10">
-                    <span class="glyphicon glyphicon-search"></span> search: {{ search }}
+                    <span class="glyphicon glyphicon-search"></span> {{ search }}
                 </div>
                 <div class="col-xs-2"></div>
             </div>
@@ -31,9 +31,9 @@
                 {% for user in users %}
                     <div class="mod-list-item">
                         <a href="{% url 'forum:profile' user.username %}"><img src="{{ user.avatar.url|file_exists }}" class="img-circle" width="30" height="30"></a>
-                        <a href="{% url 'forum:profile' user.username %} " class="lead">{{ user.username }}</a>
-                        <a href="{% url 'forum:profile' user.username %} " class="lead">{{ user.first_name }}</a>
-                        <a href="{% url 'forum:profile' user.username %} " class="lead">{{ user.last_name}}</a>
+                        <a href="{% url 'forum:profile' user.username %} " class="lead">{{ user.username }}:&ensp;
+                        {{ user.first_name }}
+                        {{ user.last_name}}</a>
                     </div>
                 {% endfor %}
             {% else %}

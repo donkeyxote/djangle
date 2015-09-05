@@ -64,10 +64,6 @@
 }
 
 .thread_opt{
-    margin: 5px auto;
-}
-
-.subscr{
     margin:0px 0px 10px 0px;
 }
 
@@ -149,4 +145,8 @@
 .reply-form{
     padding-left: 35px;
     padding-right: 35px;
+}
+
+.tag>a{
+    color: #000000;
 }

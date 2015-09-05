@@ -1,34 +1,50 @@
 from django.contrib import admin
+from django.contrib.admin.widgets import AdminFileWidget
 from django.contrib.auth.hashers import make_password
+from django.utils.safestring import mark_safe
+from djangle.settings import MEDIA_URL
 from .models import User, Post, Thread, Board, Subscription, Moderation, Ban, Comment
 
 # Register your models here.
+
+
+class AdminImageWidget(AdminFileWidget):
+    """
+    a widget that displays an image
+    """
+    def render(self, name, value, attrs=None):
+        output = []
+        if value:
+            file_path = '%s%s' % (MEDIA_URL, value)
+            output.append('<a target="_blank" href="%s"><img src="%s" height="200"></a><br />' % (file_path, file_path))
+        output.append(super(AdminImageWidget, self).render(name, value, attrs))
+        return mark_safe(u''.join(output))
 
 
 class UserAdmin(admin.ModelAdmin):
     """
     representation of User model in the admin interface
     """
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if db_field.name == 'avatar':
+            kwargs.pop("request", None)
+            kwargs['widget'] = AdminImageWidget
+            return db_field.formfield(**kwargs)
+        return super(UserAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+
     fieldsets = [
         (None, {
             'fields': [
                 'username',
                 'password',
-                'first_name',
-                'last_name',
+                ('first_name', 'last_name'),
                 'email',
-                'date_joined',
-                'last_login',
-                'rep',
-                'is_active',
-                'is_superuser',
-                'is_staff',
-                'avatar',
-                'image_tag'
+                ('date_joined', 'last_login'),
+                'avatar'
             ]
-        })
+        }),
+        ('User status', {'fields': ['rep', 'is_active', 'is_superuser', 'is_staff']})
     ]
-    readonly_fields = ['image_tag']
     list_display = ['username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff']
     list_filter = ['date_joined', 'last_login', 'is_staff']
     search_fields = ['username', 'email', 'first_name', 'last_name']
@@ -45,21 +61,23 @@ class UserAdmin(admin.ModelAdmin):
         :param change: boolean value based on whether it is adding or changing the object
         :return: nothing
         """
+        user = None
         if change:
             user = User.objects.get(username=obj.username)
-            if user.password != obj.password:
-                obj.password = make_password(obj.password)
-            obj.save()
+        if not change or user.password != obj.password:
+            obj.password = make_password(obj.password)
+        obj.save()
 
 
 class PostAdmin(admin.ModelAdmin):
     """
     representation of Post model in the admin interface
     """
+    readonly_fields = ['pos_votes', 'neg_votes']
     fieldsets = [
-        (None, {'fields': ['thread', 'message', 'author', 'pos_votes', 'neg_votes', 'pub_date']})
+        (None, {'fields': ['thread', 'message', 'author', 'pub_date', ('pos_votes', 'neg_votes')]})
     ]
-    list_display = ['message', 'thread', 'author', 'pub_date']
+    list_display = ['__str__', 'thread', 'author', 'pub_date']
     list_filter = ['pub_date']
     search_fields = ['message']
 
@@ -196,6 +214,20 @@ class BanAdmin(admin.ModelAdmin):
     search_fields = ['user__username', 'banner__username']
 
 
+class CommentAdmin(admin.ModelAdmin):
+    """
+    representation of Comment model in the admin interface
+    """
+    readonly_fields = ['pos_votes', 'neg_votes']
+    fieldsets = [
+        (None, {'fields': ['post', 'message', 'author', 'pub_date', ('pos_votes', 'neg_votes')]})
+    ]
+
+    list_display = ['__str__', 'post', 'author', 'pub_date']
+    list_filter = ['pub_date']
+    search_fields = ['message']
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Thread, ThreadAdmin)
@@ -203,4 +235,4 @@ admin.site.register(Board, BoardAdmin)
 admin.site.register(Subscription, SubscriptionAdmin)
 admin.site.register(Moderation, ModerationAdmin)
 admin.site.register(Ban, BanAdmin)
-admin.site.register(Comment)
+admin.site.register(Comment, CommentAdmin)

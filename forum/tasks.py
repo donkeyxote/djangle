@@ -8,7 +8,7 @@ import os
 
 DATE_FORMAT = "%Y-%m-%d"
 TIME_FORMAT = "%H:%M:%S"
-sep = os.linesep * 2
+sep = str(os.linesep * 2)
 
 
 @app.task
@@ -17,7 +17,8 @@ def async_mail():
     procedure for asynchronous mail service
 
     for each active user with active subscriptions, iter through subscribed threads and compose a mail with all new
-    posts since last update, then call a deferred procedure to actually send the mail.
+    posts since last update, then call a deferred procedure to actually send the mail. mind that comment will not be
+    notified.
 
     :return: nothing
     """
@@ -84,10 +85,19 @@ def sync_mail(post):
 
 @app.task
 def del_comment_mail(comment):
+    """
+    procedure to notify comment deletion
+
+    create a message for the deletion and send a notification mail through a deferred procedure
+
+    :param comment: the deleted comment
+    :return: nothing
+    """
     subject = EMAIL_SUBJECT_PREFIX + 'your comment was deleted'
     message = 'The comment:' + os.linesep + comment.message + os.linesep + 'in post: ' + comment.post.message +\
               os.linesep + 'was deleted'
     mail.delay(subject=subject, message=message, sender=None, receiver=[comment.author.email], fail_silently=False)
+
 
 @app.task
 def del_mail(post, thread=None):
