@@ -5,7 +5,7 @@ __pycache__/
 #Database
 db.sqlite3
 init_db.py
-forum/migrations/
+src/djangle/forum/migrations/
 
 #PyCharm stuff
 .idea/
@@ -17,5 +17,5 @@ config.ini
 celerybeat-schedule*
 
 #Profile pictures
-djangle/static/djangle/images/prof_pic/*
-!djangle/static/djangle/images/prof_pic/Djangle_user_default.png
+src/djangle/djangle/static/djangle/images/prof_pic/*
+!src/djangle/djangle/static/djangle/images/prof_pic/Djangle_user_default.png

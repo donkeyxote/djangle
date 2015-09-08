@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block menuleft %}
+    {% if request.user.is_superuser %}
+        <li class="closed"><a href="/admin/" class="navbar-link">Admin</a></li>
+    {% endif %}
+    <li class="closed"><a href='{% url 'forum:index' %}' class="navbar-link">Forum</a></li>
+{% endblock %}
+
+{% block body %}
+    <h1 align="center">Welcome to the Djangle</h1>
+{% endblock %}
