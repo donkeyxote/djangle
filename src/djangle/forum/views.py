@@ -474,7 +474,7 @@ def manage_user_mod(request, user_pk):
             return HttpResponseRedirect(reverse('forum:profile', kwargs={'username': user.username}))
     else:
         form = AddModeratorForm(user=user)
-    return render(request, 'forum/create.html', {'forms': [form]})
+    return render(request, 'forum/create.html', {'forms': [form], 'object': 'user modded boards', 'user': user})
 
 
 @user_passes_test_with_403(lambda u: u.is_mod or u.is_supermod)
@@ -658,7 +658,7 @@ def manage_board_mod(request, board_code):
             return HttpResponseRedirect(reverse('forum:moderators'))
     else:
         form = BoardModForm(board=board)
-    return render(request, 'forum/create.html', {'forms': [form], 'object': 'board moderation'})
+    return render(request, 'forum/create.html', {'forms': [form], 'object': 'board moderation', 'board': board})
 
 
 @login_required

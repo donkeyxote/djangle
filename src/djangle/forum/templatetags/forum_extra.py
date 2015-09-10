@@ -23,3 +23,8 @@ def file_exists(filepath):
         return filepath
     except Exception:
         return os.path.join(MEDIA_URL, 'prof_pic', 'Djangle_user_default.png')
+
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)

@@ -15,12 +15,16 @@
                 </div>
             </div>
         </a>
-            {% for moderation in moderators.board %}
-                <div class="mod-list-item">
-                    <a href="{% url 'forum:remove_mod' moderation.user.pk board.code %}"><span class="glyphicon glyphicon-remove glip-action" onmouseover="" title="remove"></span></a>
-                    <a href="{% url 'forum:profile' moderation.user.username %}"><img src="{{ moderation.user.avatar.url|file_exists }}" class="img-circle" width="30" height="30"></a>
-                    <a href="{% url 'forum:profile' moderation.user.username %} " class="lead">{{ moderation.user.username }}</a>
-                </div>
-            {% endfor %}
+        {% for bd, moderator in moderators.items %}
+            {% if bd == board %}
+                {% for mod in moderator %}
+                    <div class="mod-list-item">
+                        <a href="{% url 'forum:remove_mod' mod.user.pk board.code %}"><span class="glyphicon glyphicon-remove glip-action" onmouseover="" title="remove"></span></a>
+                        <a href="{% url 'forum:profile' mod.user.username %}"><img src="{{ mod.user.avatar.url|file_exists }}" class="img-circle" width="30" height="30"></a>
+                        <a href="{% url 'forum:profile' mod.user.username %} " class="lead">{{ mod.user.username }}</a>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
     {% endfor %}
 {% endblock %}

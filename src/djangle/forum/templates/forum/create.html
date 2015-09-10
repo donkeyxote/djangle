@@ -2,6 +2,11 @@
 {% load crispy_forms_tags %}
 {%  block titlesection %} - Forum - Create {{ object }}{%  endblock %}
 {% block body %}
+    {% if object == 'user modded boards' %}
+        <div class="lead">Select modded board for user {{ user.username }}:</div>
+    {% elif object == 'board moderation' %}
+        <div class="lead">Select moderators for board {{ board.name }}:</div>
+    {% endif %}
     <section>
         <form method="post">
             {% csrf_token %}
@@ -18,7 +23,7 @@
             {% elif object == 'search' %}
                 <input type="submit" value="Search" class="btn btn-default" />
             {% else %}
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" value="Confirm" class="btn btn-default" />
             {% endif %}
         </form>
     </section>
