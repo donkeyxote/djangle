@@ -1,6 +1,7 @@
 """
 module for form views
 """
+import operator
 
 import os
 import datetime
@@ -608,7 +609,8 @@ def moderators_view(request):
     moderators = {}
     for board in Board.objects.all():
         moderators[board] = board.moderation_set.all()
-    return render(request, 'forum/moderators.html', {'moderators': moderators})
+    boards = sorted(list(moderators.keys()), key=lambda name: operator.attrgetter('name')(name).lower(), reverse=False)
+    return render(request, 'forum/moderators.html', {'moderators': moderators, 'boards': boards})
 
 
 @user_passes_test_with_403(lambda u: u.is_supermod())

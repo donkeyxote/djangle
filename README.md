@@ -1,4 +1,3 @@
-
 # Djangle
 ### a Django jungle forum
 
@@ -54,7 +53,7 @@ start a celery worker
     $ celery -A djangle worker -l info
 
 open another terminal tab in project's root directory and start celery beat service
-(this is only required for asynchronous mails)
+(this is only required for asynchronous tasks like asynchronous subscriptions, and ban evaluation)
 
     $ celery -A djangle beat
 

@@ -11,7 +11,7 @@ src/djangle/forum/migrations/
 .idea/
 
 #Host configuration file
-config.ini
+#config.ini
 
 #Celery
 celerybeat-schedule*

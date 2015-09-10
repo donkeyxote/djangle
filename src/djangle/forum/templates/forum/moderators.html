@@ -2,7 +2,7 @@
 {% load forum_extra %}
 {%  block titlesection %}- Forum - Moderators{%  endblock %}
 {% block body %}
-    {% for board, board_moderators in moderators.items %}
+    {% for board in boards %}
         <a href="{% url 'forum:board' board.code none %}" id="board">
             <div class="well well-sm boards lead">
                 <div class="row">
@@ -15,7 +15,7 @@
                 </div>
             </div>
         </a>
-            {% for moderation in board_moderators %}
+            {% for moderation in moderators.board %}
                 <div class="mod-list-item">
                     <a href="{% url 'forum:remove_mod' moderation.user.pk board.code %}"><span class="glyphicon glyphicon-remove glip-action" onmouseover="" title="remove"></span></a>
                     <a href="{% url 'forum:profile' moderation.user.username %}"><img src="{{ moderation.user.avatar.url|file_exists }}" class="img-circle" width="30" height="30"></a>
