@@ -773,7 +773,7 @@ after post
 <div class="line"><a name="l00658"></a><span class="lineno">  658</span>&#160;            <span class="keywordflow">return</span> HttpResponseRedirect(reverse(<span class="stringliteral">&#39;forum:moderators&#39;</span>))</div>
 <div class="line"><a name="l00659"></a><span class="lineno">  659</span>&#160;    <span class="keywordflow">else</span>:</div>
 <div class="line"><a name="l00660"></a><span class="lineno">  660</span>&#160;        form = BoardModForm(board=board)</div>
-<div class="line"><a name="l00661"></a><span class="lineno">  661</span>&#160;    <span class="keywordflow">return</span> render(request, <span class="stringliteral">&#39;forum/create.html&#39;</span>, {<span class="stringliteral">&#39;forms&#39;</span>: [form], <span class="stringliteral">&#39;object&#39;</span>: <span class="stringliteral">&#39;board moderation&#39;</span>})</div>
+<div class="line"><a name="l00661"></a><span class="lineno">  661</span>&#160;    <span class="keywordflow">return</span> render(request, <span class="stringliteral">&#39;forum/create.html&#39;</span>, {<span class="stringliteral">&#39;forms&#39;</span>: [form], <span class="stringliteral">&#39;object&#39;</span>: <span class="stringliteral">&#39;board moderation&#39;</span>, <span class="stringliteral">&#39;board&#39;</span>: board})</div>
 <div class="line"><a name="l00662"></a><span class="lineno">  662</span>&#160;</div>
 <div class="line"><a name="l00663"></a><span class="lineno">  663</span>&#160;</div>
 <div class="line"><a name="l00664"></a><span class="lineno">  664</span>&#160;@login_required</div>
@@ -876,7 +876,7 @@ display form for selecting which boards an user can moderate
 <div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;            <span class="keywordflow">return</span> HttpResponseRedirect(reverse(<span class="stringliteral">&#39;forum:profile&#39;</span>, kwargs={<span class="stringliteral">&#39;username&#39;</span>: user.username}))</div>
 <div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;    <span class="keywordflow">else</span>:</div>
 <div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;        form = AddModeratorForm(user=user)</div>
-<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;    <span class="keywordflow">return</span> render(request, <span class="stringliteral">&#39;forum/create.html&#39;</span>, {<span class="stringliteral">&#39;forms&#39;</span>: [form]})</div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;    <span class="keywordflow">return</span> render(request, <span class="stringliteral">&#39;forum/create.html&#39;</span>, {<span class="stringliteral">&#39;forms&#39;</span>: [form], <span class="stringliteral">&#39;object&#39;</span>: <span class="stringliteral">&#39;user modded boards&#39;</span>, <span class="stringliteral">&#39;user&#39;</span>: user})</div>
 <div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;</div>
 <div class="line"><a name="l00479"></a><span class="lineno">  479</span>&#160;</div>
 <div class="line"><a name="l00480"></a><span class="lineno">  480</span>&#160;@<a class="code" href="namespaceforum_1_1decorators.html#a5f601d9edaaa4013a58e5b4c6cabef12">user_passes_test_with_403</a>(<span class="keyword">lambda</span> u: u.is_mod <span class="keywordflow">or</span> u.is_supermod)</div>

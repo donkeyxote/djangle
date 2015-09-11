@@ -160,8 +160,9 @@ var NAVTREEINDEX0 =
 "forum_2views_8py.html#af1a9536162021881913f8e69fd4b2548":[2,0,0,0,1,9,3],
 "forum_2views_8py.html#af97c627df2887ac05ce54434f48783f4":[2,0,0,0,1,9,26],
 "forum__extra_8py.html":[2,0,0,0,1,0,1],
+"forum__extra_8py.html#a3a49dab9aef0706ed279daf5756ca17c":[2,0,0,0,1,0,1,1],
 "forum__extra_8py.html#a43390f7f288512abd214d1b07875bce0":[2,0,0,0,1,0,1,0],
-"forum__extra_8py.html#a9a693a5d6f8a186ff9f659377daa96ec":[2,0,0,0,1,0,1,1],
+"forum__extra_8py.html#a9a693a5d6f8a186ff9f659377daa96ec":[2,0,0,0,1,0,1,2],
 "functions.html":[1,3,0],
 "functions_func.html":[1,3,1],
 "functions_vars.html":[1,3,2],
@@ -248,6 +249,5 @@ var NAVTREEINDEX0 =
 "tasks_8py.html#ac1539a1dd91a2540f84e33714c3a6575":[2,0,0,0,1,6,5],
 "tasks_8py.html#acf4f407f59380e366f71467ad22d1a71":[2,0,0,0,1,6,8],
 "tasks_8py.html#af3ec90ed71406aa1fa95ef06051765c8":[2,0,0,0,1,6,7],
-"tasks_8py.html#afa59bd699602f76284a5353a550d3dc2":[2,0,0,0,1,6,1],
-"tests_8py.html":[2,0,0,0,1,7]
+"tasks_8py.html#afa59bd699602f76284a5353a550d3dc2":[2,0,0,0,1,6,1]
 };
