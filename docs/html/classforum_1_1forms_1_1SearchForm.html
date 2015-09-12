@@ -159,7 +159,7 @@ Static Public Attributes</h2></td></tr>
 <div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;            item = cleaned_data.get(<span class="stringliteral">&#39;search_item&#39;</span>)</div>
 <div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;            <span class="keywordflow">if</span> item == <span class="stringliteral">&#39;thread&#39;</span>:</div>
 <div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                title = cleaned_data.get(<span class="stringliteral">&#39;title&#39;</span>)</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                tag = cleaned_data.get(<span class="stringliteral">&#39;tags&#39;</span>)</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                tag = cleaned_data.get(<span class="stringliteral">&#39;tag&#39;</span>)</div>
 <div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;                username = cleaned_data.get(<span class="stringliteral">&#39;username&#39;</span>)</div>
 <div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;                <span class="keywordflow">if</span> <span class="keywordflow">not</span> title <span class="keywordflow">and</span> <span class="keywordflow">not</span> tag <span class="keywordflow">and</span> <span class="keywordflow">not</span> username:</div>
 <div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;                    <span class="keywordflow">raise</span> forms.ValidationError(<span class="stringliteral">&#39;empty form&#39;</span>)</div>

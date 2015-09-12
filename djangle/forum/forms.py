@@ -184,7 +184,7 @@ class SearchForm(forms.Form):
             item = cleaned_data.get('search_item')
             if item == 'thread':
                 title = cleaned_data.get('title')
-                tag = cleaned_data.get('tags')
+                tag = cleaned_data.get('tag')
                 username = cleaned_data.get('username')
                 if not title and not tag and not username:
                     raise forms.ValidationError('empty form')

@@ -19,3 +19,6 @@ celerybeat-schedule*
 #Profile pictures
 djangle/djangle/static/djangle/images/prof_pic/*
 !djangle/djangle/static/djangle/images/prof_pic/Djangle_user_default.png
+
+#config
+djangle/config.ini.bak
