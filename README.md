@@ -22,7 +22,7 @@
 move to project directory
 
     $ cd /path/to/djangle
-ke migrations for forum app
+make migrations for forum app
 
     $ python3 manage.py makemigrations forum
 
